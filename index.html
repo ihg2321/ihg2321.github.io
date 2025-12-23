@@ -899,7 +899,10 @@
             box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
         }
 
-        /* emoji panel: vertical column (5 items) */
+        /* emoji panel: vertical columns with 5 rows each
+           Using grid-auto-flow: column and grid-template-rows: repeat(5, 40px)
+           This fills emojis top-to-bottom, then creates next column, etc.
+        */
         .emoji-panel {
             position: absolute;
             bottom: 140px; /* adjust as needed to sit above input */
@@ -908,12 +911,15 @@
             border: 1px solid var(--border);
             padding: 6px;
             border-radius: 10px;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-auto-flow: column;
+            grid-template-rows: repeat(5, 40px);
             gap: 6px;
-            width: 48px;
+            align-items: center;
             z-index: 999;
             display: none;
+            max-height: calc(40px * 5 + 6px * 6); /* visual limit */
+            overflow: auto;
         }
         .emoji-item {
             width: 40px;
@@ -924,6 +930,10 @@
             font-size: 18px;
             cursor: pointer;
             border-radius: 6px;
+            user-select: none;
+        }
+        .emoji-item:hover {
+            background: rgba(255,255,255,0.03);
         }
 
         /* uploaded image style in bubble */
@@ -1296,13 +1306,15 @@
         let requestsRef = null;
 
         // 금지 문자(., #, $, [, ])를 안전한 키로 변환
-        // 각 문자를 16진수 %HH 형태로 치환합니다 (Firebase path에 안전)
         function sanitizeKey(str) {
             if (!str || typeof str !== 'string') return str;
             return str.replace(/[.#$\[\]]/g, (c) => {
                 return '%' + c.charCodeAt(0).toString(16);
             });
         }
+
+        // EMOJI 리스트 (full list used by emoji panel)
+        const EMOJIS_FULL = ['😀','😁','😂','🤣','😊','😍','😘','🤗','🤔','😎','😭','😅','😇','🤩','😴','👍','👎','👏','🙏','🎉','❤️','🔥','💯','🤝','🤞','🙌','😬','😡','🤖','🌸','🍕','☕','😃','🙂','🙃','😋','😜','😇','🤤','😇','😱','😳','😐','😑','😶','😏','😒','😓','😔','😕','😖','😞','😤','😠','😪','🤒','🤕','🤧','🥳','🤠','🤡','👻','💩','👍🏻','👍🏼','👍🏽','👍🏾','👍🏿'];
 
         // ==================== 로컬 스토리지에서 사용자 정보 확인 ====================
         function checkLoginStatus() {
@@ -1390,6 +1402,8 @@
                 if (userSnapshot.exists()) {
                     errorDiv.textContent = '이미 사용 중인 아이디입니다.';
                     errorDiv.classList.add('show');
+                    signupBtn.disabled = false;
+                    signupBtn.textContent = '회원가입';
                     return;
                 }
 
@@ -1399,6 +1413,8 @@
                 if (emailSnapshot.exists()) {
                     errorDiv.textContent = '이미 사용 중인 이메일입니다.';
                     errorDiv.classList.add('show');
+                    signupBtn.disabled = false;
+                    signupBtn.textContent = '회원가입';
                     return;
                 }
                 
@@ -1461,14 +1477,12 @@
             loginBtn.innerHTML = '<span class="spinner"></span> 로그인 중...';
             
             try {
-                // identifier를 username 또는 email로 판단하지 말고, 매핑에서 먼저 찾아본다
                 let userId = null;
 
                 const usernameSnapshot = await get(ref(database, `usernames/${identifier}`));
                 if (usernameSnapshot.exists()) {
                     userId = usernameSnapshot.val();
                 } else {
-                    // 이메일 매핑 조회 시 sanitizeKey 사용
                     const emailKey = sanitizeKey(identifier);
                     const emailSnapshot = await get(ref(database, `emails/${emailKey}`));
                     if (emailSnapshot.exists()) {
@@ -1479,15 +1493,18 @@
                 if (!userId) {
                     errorDiv.textContent = '존재하지 않는 아이디 또는 이메일입니다.';
                     errorDiv.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '로그인';
                     return;
                 }
                 
-                // 사용자 정보 가져오기
                 const userSnapshot = await get(ref(database, `users/${userId}`));
                 
                 if (!userSnapshot.exists()) {
                     errorDiv.textContent = '사용자 정보를 찾을 수 없습니다.';
                     errorDiv.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '로그인';
                     return;
                 }
                 
@@ -1497,6 +1514,8 @@
                 if (userData.password !== hashedPassword) {
                     errorDiv.textContent = '비밀번호가 올바르지 않습니다.';
                     errorDiv.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '로그인';
                     return;
                 }
                 
@@ -1537,7 +1556,6 @@
             if (confirm('로그아웃 하시겠습니까?')) {
                 try {
                     await updateUserStatus(false);
-                    // 리스너 정리
                     cleanupAllListeners();
 
                     localStorage.removeItem('chatAppUser');
@@ -1554,7 +1572,6 @@
         function loadUserData() {
             if (!currentUser) return;
             const profileEl = document.getElementById('userProfile');
-            // 표시할 텍스트 (username 첫글자 또는 이름 이니셜)
             const label = currentUser.username ? currentUser.username.charAt(0).toUpperCase() : (currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U');
             profileEl.textContent = label;
         }
@@ -1599,34 +1616,36 @@
             addBtn.innerHTML = '<span class="spinner"></span> 요청 중...';
             
             try {
-                // 아이디로 사용자 검색
                 const usernameSnapshot = await get(ref(database, `usernames/${username}`));
                 
                 if (!usernameSnapshot.exists()) {
                     errorDiv.textContent = '해당 아이디의 사용자를 찾을 수 없습니다.';
                     errorDiv.classList.add('show');
+                    addBtn.disabled = false;
+                    addBtn.textContent = '친구 요청 보내기';
                     return;
                 }
                 
                 const friendId = usernameSnapshot.val();
 
-                // 이미 친구인지 확인
                 const friendCheck = await get(ref(database, `friends/${currentUser.uid}/${friendId}`));
                 if (friendCheck.exists()) {
                     errorDiv.textContent = '이미 친구로 등록되어 있습니다.';
                     errorDiv.classList.add('show');
+                    addBtn.disabled = false;
+                    addBtn.textContent = '친구 요청 보내기';
                     return;
                 }
 
-                // 이미 요청을 보냈는지 확인 (recipient side)
                 const existingRequest = await get(ref(database, `friendRequests/${friendId}/${currentUser.uid}`));
                 if (existingRequest.exists()) {
                     errorDiv.textContent = '이미 친구 요청을 보냈습니다.';
                     errorDiv.classList.add('show');
+                    addBtn.disabled = false;
+                    addBtn.textContent = '친구 요청 보내기';
                     return;
                 }
 
-                // 요청 생성 (recipientId -> senderId)
                 await set(ref(database, `friendRequests/${friendId}/${currentUser.uid}`), {
                     from: currentUser.uid,
                     username: currentUser.username,
@@ -1638,7 +1657,6 @@
                 successDiv.textContent = '친구 요청을 보냈습니다!';
                 successDiv.classList.add('show');
                 document.getElementById('friendUsername').value = '';
-
             } catch (error) {
                 console.error('친구 요청 에러:', error);
                 errorDiv.textContent = '친구 요청 중 오류가 발생했습니다: ' + error.message;
@@ -1649,11 +1667,10 @@
             }
         });
 
-        // ==================== 친구 목록 로드 ====================
+        // ==================== 친구 목록, 요청, 채팅 로드 및 기타 함수 ====================
         function loadFriends() {
             if (!currentUser) return;
 
-            // 기존 리스너 해제 (중복 등록 방지)
             if (friendsRef) {
                 try { off(friendsRef); } catch (e) { /* ignore */ }
             }
@@ -1704,11 +1721,9 @@
             });
         }
 
-        // ==================== 친구 요청 로드 ====================
         function loadFriendRequests() {
             if (!currentUser) return;
 
-            // 기존 requests 리스너 해제
             if (requestsRef) {
                 try { off(requestsRef); } catch (e) { /* ignore */ }
             }
@@ -1736,7 +1751,6 @@
                 requestCountEl.textContent = `(${entries.length})`;
 
                 for (const [senderId, reqData] of entries) {
-                    // 요청 보낸 사용자의 최신 프로필 가져오기
                     const userSnap = await get(ref(database, `users/${senderId}`));
                     const sender = userSnap.exists() ? userSnap.val() : {
                         username: reqData.username || 'unknown',
@@ -1759,7 +1773,6 @@
                         </div>
                     `;
 
-                    // 이벤트 바인딩
                     item.querySelector('.btn-accept').addEventListener('click', async () => {
                         await acceptFriendRequest(senderId);
                     });
@@ -1772,19 +1785,13 @@
             });
         }
 
-        // 수락
         async function acceptFriendRequest(senderId) {
             if (!currentUser) return;
             try {
-                // 양방향 친구 추가
                 await set(ref(database, `friends/${currentUser.uid}/${senderId}`), { addedAt: Date.now() });
                 await set(ref(database, `friends/${senderId}/${currentUser.uid}`), { addedAt: Date.now() });
-
-                // 요청 삭제
                 await set(ref(database, `friendRequests/${currentUser.uid}/${senderId}`), null);
-
                 alert('친구 요청을 수락했습니다.');
-                // 친구 목록 새로고침(리스너가 자동 갱신)
                 loadFriends();
             } catch (err) {
                 console.error('수락 에러:', err);
@@ -1792,7 +1799,6 @@
             }
         }
 
-        // 거절
         async function rejectFriendRequest(senderId) {
             if (!currentUser) return;
             try {
@@ -1804,32 +1810,27 @@
             }
         }
 
-        // ==================== 채팅 열기 ====================
+        // ==================== 채팅 관련 (openChat / setupMessageInput / emoji panel) ====================
         function openChat(friendId, friendData) {
             currentChatUser = { id: friendId, data: friendData };
-            
-            // 채팅방 ID 생성 (작은 UID가 앞에 오도록)
             currentChatId = [currentUser.uid, friendId].sort().join('_');
 
-            // 기존 messages 리스너 제거 (중복 리스너 방지)
             if (messagesRef) {
-                try { off(messagesRef); } catch (e) { /* ignore */ }
+                try { off(messagesRef); } catch (e) {}
                 messagesRef = null;
             }
-            
-            // 메시지 탭으로 전환
+
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
             document.querySelector('[data-view="messages"]').classList.add('active');
-            
+
             document.getElementById('friendsPanel').classList.remove('active');
             document.getElementById('messagesPanel').classList.add('active');
             document.getElementById('chatArea').classList.add('active');
-            
-            // 채팅 헤더 설정 (원래 위치: 이모티콘 버튼은 input area에 둡니다)
+
             const initial = friendData.username ? friendData.username.charAt(0).toUpperCase() : '?';
             const onlineStatus = friendData.online ? '온라인' : '오프라인';
             const statusColor = friendData.online ? 'var(--success)' : 'var(--text-secondary)';
-            
+
             document.getElementById('chatArea').innerHTML = `
                 <div class="chat-header">
                     <div class="chat-header-left">
@@ -1865,17 +1866,14 @@
                     </div>
                 </div>
             `;
-            
-            // setup emoji panel, file input handlers, message input
+
             setupMessageInput();
             loadMessages();
             loadChatList();
 
-            // mark chat unread false for current user
             update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), { unread: false }).catch(()=>{});
         }
 
-        // ==================== 메시지 입력 설정 ====================
         function setupMessageInput() {
             const messageInput = document.getElementById('messageInput');
             const sendBtn = document.getElementById('sendBtn');
@@ -1883,16 +1881,16 @@
             const attachBtn = document.getElementById('attachBtn');
             const fileInput = document.getElementById('fileInput');
             const emojiPanel = document.getElementById('emojiPanel');
-            
+
             if (!messageInput || !sendBtn) return;
-            
+
             messageInput.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 120) + 'px';
             });
-            
+
             sendBtn.addEventListener('click', sendMessage);
-            
+
             messageInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -1900,11 +1898,10 @@
                 }
             });
 
-            // Emoji panel setup (populate only 5 emojis in a vertical column)
+            // Populate emoji panel with full EMOJIS_FULL list arranged into columns with 5 rows each (grid handles layout)
             if (emojiPanel && emojiPanel.children.length === 0) {
-                const EMOJIS = ['😀','😁','😂','🤣','😊','😍','😘','🤗','🤔','😎'];
-                const toShow = EMOJIS.slice(0,5);
-                toShow.forEach(e => {
+                emojiPanel.innerHTML = '';
+                for (const e of EMOJIS_FULL) {
                     const btn = document.createElement('div');
                     btn.className = 'emoji-item';
                     btn.textContent = e;
@@ -1914,7 +1911,7 @@
                         messageInput.focus();
                     });
                     emojiPanel.appendChild(btn);
-                });
+                }
             }
 
             // Toggle emoji panel
@@ -1949,7 +1946,6 @@
                         return;
                     }
 
-                    // show a simple upload indicator (spinner in button)
                     attachBtn.disabled = true;
                     attachBtn.innerHTML = '<span class="spinner"></span>';
 
@@ -1960,7 +1956,6 @@
                         await uploadBytes(sRef, file);
                         const url = await getDownloadURL(sRef);
 
-                        // push image message
                         const messagesRefLocal = ref(database, `messages/${currentChatId}`);
                         await push(messagesRefLocal, {
                             type: 'image',
@@ -1971,7 +1966,6 @@
                             timestamp: Date.now()
                         });
 
-                        // update last message
                         await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), {
                             lastMessage: '[이미지]',
                             lastMessageTime: Date.now(),
@@ -2005,14 +1999,14 @@
             ta.dispatchEvent(new Event('input'));
         }
 
-        // ==================== 메시지 전송 ====================
+        // ==================== 메시지 전송, 로드, 채팅 목록 등 ====================
         async function sendMessage() {
             const messageInput = document.getElementById('messageInput');
             if (!messageInput || !currentChatId) return;
-            
+
             const text = messageInput.value.trim();
             if (text === '') return;
-            
+
             try {
                 const messagesRefLocal = ref(database, `messages/${currentChatId}`);
                 await push(messagesRefLocal, {
@@ -2022,20 +2016,19 @@
                     senderUsername: currentUser.username,
                     timestamp: Date.now()
                 });
-                
-                // 최근 메시지 업데이트
+
                 await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), {
                     lastMessage: text,
                     lastMessageTime: Date.now(),
                     unread: false
                 });
-                
+
                 await update(ref(database, `chats/${currentChatUser.id}/${currentUser.uid}`), {
                     lastMessage: text,
                     lastMessageTime: Date.now(),
                     unread: true
                 });
-                
+
                 messageInput.value = '';
                 messageInput.style.height = 'auto';
             } catch (error) {
@@ -2044,46 +2037,30 @@
             }
         }
 
-        // ==================== 메시지 로드 (및 읽음 처리) ====================
         async function loadMessages() {
             if (!currentChatId) return;
-
-            // 기존 messages 리스너 해제
             if (messagesRef) {
-                try { off(messagesRef); } catch (e) { /* ignore */ }
+                try { off(messagesRef); } catch (e) {}
+                messagesRef = null;
             }
-
             messagesRef = ref(database, `messages/${currentChatId}`);
             onValue(messagesRef, async (snapshot) => {
                 const messagesContainer = document.getElementById('messagesContainer');
                 if (!messagesContainer) return;
-                
                 messagesContainer.innerHTML = '';
-                
                 if (!snapshot.exists()) {
-                    messagesContainer.innerHTML = `
-                        <div class="date-divider"><span>대화 시작</span></div>
-                    `;
+                    messagesContainer.innerHTML = `<div class="date-divider"><span>대화 시작</span></div>`;
                     return;
                 }
-                
-                let lastDate = null;
-                const messages = [];
-                
-                snapshot.forEach((childSnapshot) => {
-                    messages.push({
-                        id: childSnapshot.key,
-                        ...childSnapshot.val()
-                    });
-                });
-                
-                messages.sort((a, b) => a.timestamp - b.timestamp);
 
-                // render messages and collect to mark read
+                const messages = [];
+                snapshot.forEach(child => messages.push({ id: child.key, ...child.val() }));
+                messages.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
+
+                let lastDate = null;
                 for (const message of messages) {
                     const messageDate = new Date(message.timestamp);
                     const dateStr = messageDate.toLocaleDateString('ko-KR');
-                    
                     if (dateStr !== lastDate) {
                         const divider = document.createElement('div');
                         divider.className = 'date-divider';
@@ -2091,24 +2068,14 @@
                         messagesContainer.appendChild(divider);
                         lastDate = dateStr;
                     }
-                    
+
                     const isSent = message.senderId === currentUser.uid;
-                    const timeStr = messageDate.toLocaleTimeString('ko-KR', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                    });
-                    
-                    let initial;
-                    if (isSent) {
-                        initial = currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U';
-                    } else {
-                        initial = currentChatUser && currentChatUser.data.username ? currentChatUser.data.username.charAt(0).toUpperCase() : '?';
-                    }
-                    
+                    const timeStr = messageDate.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
+                    const initial = isSent ? (currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U') : (currentChatUser && currentChatUser.data.username ? currentChatUser.data.username.charAt(0).toUpperCase() : '?');
+
                     const messageDiv = document.createElement('div');
                     messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-                    
-                    // bubble content
+
                     let bubbleContent = '';
                     if (message.type === 'image' && message.imageUrl) {
                         bubbleContent = `<img src="${escapeHtml(message.imageUrl)}" class="message-image" alt="${escapeHtml(message.filename || 'image')}" />`;
@@ -2116,7 +2083,6 @@
                         bubbleContent = escapeHtml(message.text || '');
                     }
 
-                    // read indicator for sent messages
                     let readHtml = '';
                     if (isSent) {
                         const readBy = message.readBy || {};
@@ -2132,85 +2098,56 @@
                             ${readHtml}
                         </div>
                     `;
-                    
                     messagesContainer.appendChild(messageDiv);
                 }
-                
+
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-                // mark unread messages as read for current user (set readBy)
                 for (const message of messages) {
                     if (message.senderId !== currentUser.uid) {
                         const alreadyRead = message.readBy && message.readBy[currentUser.uid];
                         if (!alreadyRead) {
                             try {
                                 await set(ref(database, `messages/${currentChatId}/${message.id}/readBy/${currentUser.uid}`), true);
-                            } catch (e) {
-                                console.warn('읽음 표시 실패', e);
-                            }
+                            } catch (e) { console.warn('읽음 표시 실패', e); }
                         }
                     }
                 }
 
-                // also clear chat-level unread flag for this user
                 try {
                     await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), { unread: false });
-                } catch(e) { /* ignore */ }
+                } catch(e) {}
             });
         }
 
-        // ==================== 채팅 목록 로드 ====================
         function loadChatList() {
             if (!currentUser) return;
-
-            // 기존 chats 리스너 해제
             if (chatsRef) {
-                try { off(chatsRef); } catch (e) { /* ignore */ }
+                try { off(chatsRef); } catch (e) {}
+                chatsRef = null;
             }
-
             chatsRef = ref(database, `chats/${currentUser.uid}`);
             onValue(chatsRef, async (snapshot) => {
                 const chatList = document.getElementById('chatList');
                 if (!chatList) return;
-                
                 chatList.innerHTML = '';
-                
                 if (!snapshot.exists()) {
-                    chatList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💬</div>
-                            <h3>메시지가 없습니다</h3>
-                            <p>친구에게 메시지를 보내보세요!</p>
-                        </div>
-                    `;
+                    chatList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💬</div><h3>메시지가 없습니다</h3><p>친구에게 메시지를 보내보세요!</p></div>`;
                     return;
                 }
-                
                 const chats = [];
                 for (const [friendId, chatData] of Object.entries(snapshot.val())) {
                     const userSnapshot = await get(ref(database, `users/${friendId}`));
                     if (userSnapshot.exists()) {
-                        chats.push({
-                            friendId,
-                            friendData: userSnapshot.val(),
-                            chatData
-                        });
+                        chats.push({ friendId, friendData: userSnapshot.val(), chatData });
                     }
                 }
-                
-                chats.sort((a, b) => (b.chatData.lastMessageTime || 0) - (a.chatData.lastMessageTime || 0));
-                
+                chats.sort((a,b) => (b.chatData.lastMessageTime||0) - (a.chatData.lastMessageTime||0));
                 let unreadCount = 0;
-                
                 for (const chat of chats) {
                     const initial = chat.friendData.username.charAt(0).toUpperCase();
-                    const time = chat.chatData.lastMessageTime ? new Date(chat.chatData.lastMessageTime).toLocaleTimeString('ko-KR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }) : '';
-                    
+                    const time = chat.chatData.lastMessageTime ? new Date(chat.chatData.lastMessageTime).toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}) : '';
                     if (chat.chatData.unread) unreadCount++;
-                    
                     const chatItem = document.createElement('div');
                     chatItem.className = 'chat-item';
                     chatItem.innerHTML = `
@@ -2224,22 +2161,14 @@
                         </div>
                         ${chat.chatData.unread ? '<span class="unread-badge">N</span>' : ''}
                     `;
-                    
                     chatItem.addEventListener('click', () => {
                         openChat(chat.friendId, chat.friendData);
-                        
-                        // 읽음 처리
                         if (chat.chatData.unread) {
-                            update(ref(database, `chats/${currentUser.uid}/${chat.friendId}`), {
-                                unread: false
-                            });
+                            update(ref(database, `chats/${currentUser.uid}/${chat.friendId}`), { unread: false });
                         }
                     });
-                    
                     chatList.appendChild(chatItem);
                 }
-                
-                // 읽지 않은 메시지 배지 업데이트
                 const badge = document.getElementById('unreadBadge');
                 if (unreadCount > 0) {
                     badge.textContent = unreadCount;
@@ -2250,81 +2179,14 @@
             });
         }
 
-        function loadChats() {
-            loadChatList();
-        }
+        function loadChats() { loadChatList(); }
 
-        // HTML 이스케이프
         function escapeHtml(text) {
             if (!text) return '';
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
+            const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
-        // ==================== UI 전환 ====================
-        document.getElementById('showSignup').addEventListener('click', () => {
-            document.getElementById('loginContainer').classList.remove('active');
-            document.getElementById('signupContainer').classList.add('active');
-        });
-
-        document.getElementById('backToLogin').addEventListener('click', () => {
-            document.getElementById('signupContainer').classList.remove('active');
-            document.getElementById('loginContainer').classList.add('active');
-        });
-
-        // 네비게이션
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
-                
-                const view = item.dataset.view;
-                
-                if (view === 'friends') {
-                    document.getElementById('friendsPanel').classList.add('active');
-                    document.getElementById('messagesPanel').classList.remove('active');
-                    document.getElementById('chatArea').classList.remove('active');
-                } else if (view === 'messages') {
-                    document.getElementById('friendsPanel').classList.remove('active');
-                    document.getElementById('messagesPanel').classList.add('active');
-                    if (currentChatId) {
-                        document.getElementById('chatArea').classList.add('active');
-                    }
-                }
-            });
-        });
-
-        // 친구 탭 전환
-        document.querySelectorAll('#friendsTabs .tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#friendsTabs .tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                const tab = btn.dataset.tab;
-                
-                if (tab === 'friends-list') {
-                    document.getElementById('friendsList').style.display = 'block';
-                    document.getElementById('friendRequests').style.display = 'none';
-                    document.getElementById('addFriend').style.display = 'none';
-                } else if (tab === 'add-friend') {
-                    document.getElementById('friendsList').style.display = 'none';
-                    document.getElementById('friendRequests').style.display = 'none';
-                    document.getElementById('addFriend').style.display = 'block';
-                } else if (tab === 'requests') {
-                    document.getElementById('friendsList').style.display = 'none';
-                    document.getElementById('friendRequests').style.display = 'block';
-                    document.getElementById('addFriend').style.display = 'none';
-                }
-            });
-        });
-
-        // 페이지 종료 시 오프라인 처리 및 리스너 정리
         window.addEventListener('beforeunload', () => {
             if (currentUser) {
                 updateUserStatus(false);
@@ -2332,19 +2194,15 @@
             cleanupAllListeners();
         });
 
-        // 전체 리스너 정리 함수
         function cleanupAllListeners() {
             try { if (friendsRef) off(friendsRef); } catch(e) {}
             try { if (chatsRef) off(chatsRef); } catch(e) {}
             try { if (messagesRef) off(messagesRef); } catch(e) {}
             try { if (requestsRef) off(requestsRef); } catch(e) {}
-            friendsRef = null;
-            chatsRef = null;
-            messagesRef = null;
-            requestsRef = null;
+            friendsRef = chatsRef = messagesRef = requestsRef = null;
         }
 
-        // ==================== 설정 모달 동작 ====================
+        // Settings modal handlers
         const settingsModal = document.getElementById('settingsModal');
         const openSettingsBtn = document.getElementById('openSettings');
         const userProfileBtn = document.getElementById('userProfile');
@@ -2353,7 +2211,6 @@
 
         function openSettings() {
             if (!currentUser) return;
-            // 초기값 채우기
             document.getElementById('settingsName').value = currentUser.name || '';
             document.getElementById('settingsStatus').value = currentUser.status || '';
             document.getElementById('currentPassword').value = '';
@@ -2361,13 +2218,10 @@
             document.getElementById('confirmNewPassword').value = '';
             document.getElementById('settingsError').classList.remove('show');
             document.getElementById('settingsSuccess').classList.remove('show');
-
             settingsModal.classList.add('active');
         }
 
-        function closeSettings() {
-            settingsModal.classList.remove('active');
-        }
+        function closeSettings() { settingsModal.classList.remove('active'); }
 
         openSettingsBtn.addEventListener('click', openSettings);
         userProfileBtn.addEventListener('click', openSettings);
@@ -2382,71 +2236,29 @@
             const confirmNew = document.getElementById('confirmNewPassword').value;
             const err = document.getElementById('settingsError');
             const ok = document.getElementById('settingsSuccess');
+            err.classList.remove('show'); ok.classList.remove('show');
 
-            err.classList.remove('show');
-            ok.classList.remove('show');
-
-            // 이름/상태 업데이트 (빈값 허용하되 null이 아니게)
             try {
-                await update(ref(database, `users/${currentUser.uid}`), {
-                    name: name,
-                    status: status
-                });
-
-                // 로컬 currentUser 갱신 및 UI 반영
-                currentUser.name = name;
-                currentUser.status = status;
+                await update(ref(database, `users/${currentUser.uid}`), { name: name, status: status });
+                currentUser.name = name; currentUser.status = status;
                 localStorage.setItem('chatAppUser', JSON.stringify(currentUser));
-                loadUserData();
-                loadFriends(); // 친구 목록에 이름/상태 반영
+                loadUserData(); loadFriends();
 
-                // 비밀번호 변경 처리(입력한 경우에만)
                 if (newPwd || confirmNew || currentPwd) {
-                    if (!currentPwd) {
-                        err.textContent = '현재 비밀번호를 입력하세요.';
-                        err.classList.add('show');
-                        return;
-                    }
-                    if (newPwd.length < 6) {
-                        err.textContent = '새 비밀번호는 6자 이상이어야 합니다.';
-                        err.classList.add('show');
-                        return;
-                    }
-                    if (newPwd !== confirmNew) {
-                        err.textContent = '새 비밀번호와 확인값이 일치하지 않습니다.';
-                        err.classList.add('show');
-                        return;
-                    }
+                    if (!currentPwd) { err.textContent = '현재 비밀번호를 입력하세요.'; err.classList.add('show'); return; }
+                    if (newPwd.length < 6) { err.textContent = '새 비밀번호는 6자 이상이어야 합니다.'; err.classList.add('show'); return; }
+                    if (newPwd !== confirmNew) { err.textContent = '새 비밀번호와 확인값이 일치하지 않습니다.'; err.classList.add('show'); return; }
 
-                    // 현재 비밀번호 확인
                     const userSnap = await get(ref(database, `users/${currentUser.uid}`));
-                    if (!userSnap.exists()) {
-                        err.textContent = '사용자 정보를 찾을 수 없습니다.';
-                        err.classList.add('show');
-                        return;
-                    }
+                    if (!userSnap.exists()) { err.textContent = '사용자 정보를 찾을 수 없습니다.'; err.classList.add('show'); return; }
                     const userData = userSnap.val();
-                    const hashedCurrent = btoa(currentPwd);
-                    if (userData.password !== hashedCurrent) {
-                        err.textContent = '현재 비밀번호가 올바르지 않습니다.';
-                        err.classList.add('show');
-                        return;
-                    }
+                    if (userData.password !== btoa(currentPwd)) { err.textContent = '현재 비밀번호가 올바르지 않습니다.'; err.classList.add('show'); return; }
 
-                    // 비밀번호 업데이트
-                    const hashedNew = btoa(newPwd);
-                    await update(ref(database, `users/${currentUser.uid}`), {
-                        password: hashedNew
-                    });
-
-                    ok.textContent = '계정 정보와 비밀번호가 업데이트되었습니다.';
-                    ok.classList.add('show');
+                    await update(ref(database, `users/${currentUser.uid}`), { password: btoa(newPwd) });
+                    ok.textContent = '계정 정보와 비밀번호가 업데이트되었습니다.'; ok.classList.add('show');
                 } else {
-                    ok.textContent = '계정 정보가 업데이트되었습니다.';
-                    ok.classList.add('show');
+                    ok.textContent = '계정 정보가 업데이트되었습니다.'; ok.classList.add('show');
                 }
-
-                // 닫지 않고 메시지 보여주기
             } catch (error) {
                 console.error('설정 저장 에러:', error);
                 err.textContent = '설정 저장 중 오류가 발생했습니다: ' + error.message;
@@ -2454,12 +2266,21 @@
             }
         });
 
-        // 모달 외부 클릭으로 닫기 (백드롭)
         settingsModal.addEventListener('click', (e) => {
             if (e.target === settingsModal) closeSettings();
         });
 
-        // 페이지 로드 시 로그인 상태 확인
+        document.getElementById('showSignup').addEventListener('click', () => {
+            document.getElementById('loginContainer').classList.remove('active');
+            document.getElementById('signupContainer').classList.add('active');
+        });
+
+        document.getElementById('backToLogin').addEventListener('click', () => {
+            document.getElementById('signupContainer').classList.remove('active');
+            document.getElementById('loginContainer').classList.add('active');
+        });
+
+        // 초기 실행
         checkLoginStatus();
     </script>
 </body>
