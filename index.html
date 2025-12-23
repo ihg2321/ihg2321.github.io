@@ -24,1261 +24,275 @@
             --warning: #F59E0B;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background: var(--bg-main);
-            color: var(--text-primary);
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* 공통 버튼 스타일 */
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            font-family: 'Noto Sans KR', sans-serif;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(124, 58, 237, 0.6);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-hover);
-        }
-
-        /* 로딩 스피너 */
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* 에러 메시지 */
-        .error-message {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid var(--error);
-            color: var(--error);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .success-message {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        /* ==================== 로그인/회원가입 화면 ==================== */
-        .auth-container {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            background: radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
-        }
-
-        .auth-container.active {
-            display: flex;
-        }
-
-        .auth-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 48px;
-            width: 100%;
-            max-width: 440px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: slideUp 0.5s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .auth-logo {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .auth-logo h1 {
-            font-family: 'Fredoka', sans-serif;
-            font-size: 42px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-        }
-
-        .auth-logo p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--bg-main);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-size: 15px;
-            transition: all 0.3s ease;
-            font-family: 'Noto Sans KR', sans-serif;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        .form-actions {
-            margin-top: 24px;
-        }
-
-        .form-actions .btn {
-            width: 100%;
-            margin-bottom: 12px;
-        }
-
-        .auth-switch {
-            text-align: center;
-            margin-top: 24px;
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .auth-switch a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .auth-switch a:hover {
-            color: var(--primary-light);
-        }
-
-        .input-hint {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        /* ==================== 메인 애플리케이션 ==================== */
-        .main-app {
-            display: none;
-            height: 100vh;
-        }
-
-        .main-app.active {
-            display: flex;
-        }
-
-        /* 사이드바 네비게이션 */
-        .sidebar-nav {
-            width: 80px;
-            background: var(--bg-card);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 0;
-        }
-
-        .nav-logo {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .nav-logo:hover {
-            transform: rotate(10deg) scale(1.1);
-        }
-
-        .nav-items {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .nav-item {
-            width: 56px;
-            height: 56px;
-            background: transparent;
-            border: none;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            color: var(--text-secondary);
-        }
-
-        .nav-item:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
-        }
-
-        .nav-item .badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 20px;
-            height: 20px;
-            background: var(--error);
-            border-radius: 50%;
-            font-size: 11px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--bg-card);
-        }
-
-        .nav-user {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 16px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            margin-top: 12px;
-        }
-
-        .nav-user:hover {
-            transform: scale(1.05);
-        }
-
-        .nav-settings {
-            margin-top: 8px;
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: transparent;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .nav-settings:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-
-        /* ==================== 친구 목록 패널 ==================== */
-        .friends-panel {
-            width: 360px;
-            background: var(--bg-card);
-            border-right: 1px solid var(--border);
-            display: none;
-            flex-direction: column;
-        }
-
-        .friends-panel.active {
-            display: flex;
-        }
-
-        .panel-header {
-            padding: 24px 20px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .panel-header h2 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .search-box {
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 16px 12px 44px;
-            background: var(--bg-main);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-            color: var(--text-secondary);
-        }
-
-        .panel-tabs {
-            display: flex;
-            padding: 12px 12px;
-            gap: 8px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .tab-btn {
-            padding: 8px 12px;
-            background: transparent;
-            border: none;
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .panel-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
-        }
-
-        .friend-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 8px;
-            background: transparent;
-        }
-
-        .friend-item:hover {
-            background: var(--bg-hover);
-        }
-
-        .friend-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            margin-right: 12px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 18px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            position: relative;
-        }
-
-        .friend-avatar.online::after {
-            content: '';
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 12px;
-            height: 12px;
-            background: var(--success);
-            border: 2px solid var(--bg-card);
-            border-radius: 50%;
-        }
-
-        .friend-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .friend-name {
-            font-weight: 600;
-            font-size: 15px;
-            margin-bottom: 4px;
-        }
-
-        .friend-username {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-bottom: 2px;
-        }
-
-        .friend-status {
-            font-size: 13px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .request-actions {
-            display: flex;
-            gap: 8px;
-            margin-left: 8px;
-        }
-
-        /* ==================== 메시지 목록 패널 ==================== */
-        .messages-panel {
-            width: 320px;
-            background: var(--bg-card);
-            border-right: 1px solid var(--border);
-            display: none;
-            flex-direction: column;
-        }
-
-        .messages-panel.active {
-            display: flex;
-        }
-
-        .chat-item {
-            display: flex;
-            align-items: center;
-            padding: 14px 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 4px;
-            position: relative;
-        }
-
-        .chat-item:hover {
-            background: var(--bg-hover);
-        }
-
-        .chat-item.active {
-            background: linear-gradient(90deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.05) 100%);
-            border-left: 3px solid var(--primary);
-        }
-
-        .chat-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            margin-right: 12px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 18px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-        }
-
-        .chat-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .chat-header-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-        }
-
-        .chat-name {
-            font-weight: 600;
-            font-size: 15px;
-        }
-
-        .chat-time {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .chat-preview {
-            font-size: 13px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .unread-badge {
-            background: var(--primary);
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: 8px;
-        }
-
-        /* ==================== 채팅 영역 ==================== */
-        .chat-area {
-            flex: 1;
-            display: none;
-            flex-direction: column;
-            background: var(--bg-main);
-        }
-
-        .chat-area.active {
-            display: flex;
-        }
-
-        .chat-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--bg-card);
-        }
-
-        .chat-header-left {
-            display: flex;
-            align-items: center;
-        }
-
-        .chat-header-avatar {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            margin-right: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-        }
-
-        .chat-header-details h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .chat-header-status {
-            font-size: 12px;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--success);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .chat-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            width: 36px;
-            height: 36px;
-            border: none;
-            background: var(--bg-main);
-            color: var(--text-secondary);
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 18px;
-        }
-
-        .action-btn:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .date-divider {
-            text-align: center;
-            margin: 16px 0;
-            position: relative;
-        }
-
-        .date-divider::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .date-divider span {
-            background: var(--bg-main);
-            padding: 4px 16px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            position: relative;
-            border-radius: 12px;
-        }
-
-        .message {
-            display: flex;
-            gap: 12px;
-            animation: messageSlide 0.3s ease;
-        }
-
-        @keyframes messageSlide {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message.sent {
-            flex-direction: row-reverse;
-        }
-
-        .message-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
-            color: white;
-        }
-
-        .message.sent .message-avatar {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        }
-
-        .message-content {
-            max-width: 65%;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .message-bubble {
-            background: var(--bg-card);
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 14px;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-
-        .message.sent .message-bubble {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border-radius: 16px 16px 4px 16px;
-        }
-
-        .message.received .message-bubble {
-            border-radius: 16px 16px 16px 4px;
-        }
-
-        .message-time {
-            font-size: 11px;
-            color: var(--text-secondary);
-            padding: 0 4px;
-        }
-
-        .message.sent .message-time {
-            text-align: right;
-        }
-
-        .input-area {
-            padding: 20px 24px;
-            border-top: 1px solid var(--border);
-            background: var(--bg-card);
-        }
-
-        .input-wrapper {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
-
-        .input-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .attachment-btn {
-            width: 40px;
-            height: 40px;
-            border: none;
-            background: var(--bg-main);
-            color: var(--text-secondary);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 20px;
-        }
-
-        .attachment-btn:hover {
-            background: var(--primary);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .message-input {
-            flex: 1;
-            background: var(--bg-main);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 12px 20px;
-            color: var(--text-primary);
-            font-size: 14px;
-            resize: none;
-            max-height: 120px;
-            font-family: 'Noto Sans KR', sans-serif;
-            transition: all 0.3s ease;
-        }
-
-        .message-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        .send-btn {
-            width: 48px;
-            height: 48px;
-            border: none;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 20px;
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-        }
-
-        .send-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
-        }
-
-        /* emoji panel: vertical columns with 5 rows each
-           Using grid-auto-flow: column and grid-template-rows: repeat(5, 40px)
-           This fills emojis top-to-bottom, then creates next column, etc.
-        */
-        .emoji-panel {
-            position: absolute;
-            bottom: 140px; /* adjust as needed to sit above input */
-            right: 140px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 6px;
-            border-radius: 10px;
-            display: grid;
-            grid-auto-flow: column;
-            grid-template-rows: repeat(5, 40px);
-            gap: 6px;
-            align-items: center;
-            z-index: 999;
-            display: none;
-            max-height: calc(40px * 5 + 6px * 6); /* visual limit */
-            overflow: auto;
-        }
-        .emoji-item {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            cursor: pointer;
-            border-radius: 6px;
-            user-select: none;
-        }
-        .emoji-item:hover {
-            background: rgba(255,255,255,0.03);
-        }
-
-        /* uploaded image style in bubble */
-        .message-image { max-width: 320px; border-radius: 8px; display:block; }
-
-        /* 작은 읽음 텍스트 */
-        .read-indicator { font-size:11px; color:var(--text-secondary); margin-top:6px; text-align:right; }
-
-        /* 빈 상태 화면 */
-        .empty-state {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            color: var(--text-secondary);
-        }
-
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-
-        /* 스크롤바 */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
-        }
-
-        /* 로그아웃 버튼 */
-        .logout-btn {
-            margin-top: 8px;
-            width: 48px;
-            height: 48px;
-            border: none;
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--error);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 20px;
-        }
-
-        .logout-btn:hover {
-            background: var(--error);
-            color: white;
-        }
-
-        /* 설정 모달 */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-        }
-
-        .modal-backdrop.active {
-            display: flex;
-        }
-
-        .modal {
-            width: 440px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-        }
-
-        .modal h3 {
-            margin-bottom: 12px;
-            font-size: 18px;
-        }
-
-        .modal .form-group {
-            margin-bottom: 12px;
-        }
+        * { margin:0;padding:0;box-sizing:border-box; }
+        body { font-family:'Noto Sans KR',sans-serif;background:var(--bg-main);color:var(--text-primary);height:100vh;overflow:hidden }
+
+        .btn{padding:12px 24px;border:none;border-radius:12px;font-weight:600;cursor:pointer}
+        .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+        .btn-secondary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}
+        .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .error-message{display:none;background:rgba(239,68,68,0.1);border:1px solid var(--error);color:var(--error);padding:12px;border-radius:8px;margin-bottom:16px}
+        .error-message.show{display:block}
+        .success-message{display:none;background:rgba(16,185,129,0.08);border:1px solid var(--success);color:var(--success);padding:12px;border-radius:8px;margin-bottom:16px}
+        .success-message.show{display:block}
+
+        /* layout */
+        .main-app{display:flex;height:100vh}
+        .sidebar-nav{width:80px;background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:20px 0}
+        .nav-logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+        .nav-items{flex:1;display:flex;flex-direction:column;gap:16px}
+        .nav-item{width:56px;height:56px;border-radius:12px;background:transparent;border:none;color:var(--text-secondary);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center}
+        .nav-item.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+        .nav-user{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary-light),var(--secondary));display:flex;align-items:center;justify-content:center;font-weight:700;margin-top:12px}
+        .logout-btn{margin-top:8px;width:48px;height:48px;border-radius:12px;background:transparent;border:none;color:var(--text-secondary);cursor:pointer}
+
+        .friends-panel{width:360px;background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column}
+        .panel-header{padding:18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+        .panel-header h2{font-size:20px}
+        .panel-header .small-actions{display:flex;gap:8px;align-items:center}
+        .search-box{position:relative;flex:1;margin-left:12px}
+        .search-box input{width:100%;padding:10px 12px 10px 36px;border-radius:10px;border:1px solid var(--border);background:var(--bg-main);color:var(--text-primary)}
+        .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-secondary)}
+
+        .panel-tabs{display:flex;gap:8px;padding:10px}
+        .tab-btn{padding:8px 10px;border-radius:8px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;font-weight:600}
+        .tab-btn.active{background:var(--primary);color:#fff}
+
+        .panel-content{flex:1;padding:12px;overflow:auto}
+        .friend-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer}
+        .friend-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),var(--secondary));font-weight:700}
+        .friend-avatar.online::after{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:var(--success);border:2px solid var(--bg-card);margin-left:28px;margin-top:28px}
+
+        .messages-panel{width:320px;background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column}
+        .chat-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;cursor:pointer}
+        .chat-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),var(--secondary));font-weight:700}
+
+        .chat-area{flex:1;display:flex;flex-direction:column;background:var(--bg-main)}
+        .chat-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);background:var(--bg-card)}
+        .chat-header-left{display:flex;align-items:center;gap:12px}
+        .messages-container{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+        .message{display:flex;gap:12px;max-width:75%;animation:fade .2s}
+        @keyframes fade{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+        .message.sent{margin-left:auto;flex-direction:row-reverse}
+        .message-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary-light),var(--secondary));font-weight:600}
+        .message-bubble{padding:10px 12px;border-radius:12px;background:var(--bg-card);color:var(--text-primary);word-break:break-word;max-width:100%}
+        .message.sent .message-bubble{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-radius:12px 12px 4px 12px}
+
+        .message-meta{font-size:11px;color:var(--text-secondary);margin-top:6px}
+        .read-indicator{font-size:11px;color:var(--text-secondary);margin-top:6px;text-align:right}
+
+        .input-area{padding:12px;border-top:1px solid var(--border);background:var(--bg-card)}
+        .input-wrapper{display:flex;gap:8px;align-items:flex-end}
+        .message-input{flex:1;border-radius:999px;padding:10px 14px;border:1px solid var(--border);background:var(--bg-main);color:var(--text-primary);resize:none;max-height:120px}
+        .send-btn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;cursor:pointer}
+
+        /* emoji panel: 5 rows x N columns layout */
+        .emoji-panel{position:absolute;bottom:96px;right:140px;background:var(--bg-card);border:1px solid var(--border);padding:6px;border-radius:10px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(5,40px);gap:6px;z-index:999;max-height:calc(40px*5 + 6px*4);overflow:auto;display:none}
+        .emoji-item{width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;border-radius:6px}
+
+        /* group modal */
+        .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:999}
+        .modal-backdrop.active{display:flex}
+        .modal{width:520px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px}
+        .modal h3{margin-bottom:8px}
+
+        .small{font-size:12px;color:var(--text-secondary)}
     </style>
 </head>
 <body>
-    <!-- ==================== 로그인 화면 ==================== -->
+    <!-- 로그인 / 회원가입 (간단) -->
     <div class="auth-container active" id="loginContainer">
-        <div class="auth-box">
+        <div class="auth-box" style="padding:28px;max-width:420px">
             <div class="auth-logo">
                 <h1>💬 ChatApp</h1>
-                <p>친구들과 실시간으로 소통하세요</p>
+                <p class="small">친구들과 실시간으로 소통하세요</p>
             </div>
-            
+
             <div class="error-message" id="loginError"></div>
-            
+
             <form id="loginForm">
-                <div class="form-group">
-                    <label for="loginUsername">아이디 또는 이메일</label>
-                    <input type="text" id="loginUsername" placeholder="아이디 또는 이메일을 입력하세요" required>
+                <div class="form-group" style="margin-bottom:12px">
+                    <label for="loginUsername" style="color:var(--text-secondary);font-size:13px">아이디 또는 이메일</label>
+                    <input id="loginUsername" type="text" required placeholder="아이디 또는 이메일" />
                 </div>
-                
-                <div class="form-group">
-                    <label for="loginPassword">비밀번호</label>
-                    <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요" required>
+                <div class="form-group" style="margin-bottom:12px">
+                    <label for="loginPassword" style="color:var(--text-secondary);font-size:13px">비밀번호</label>
+                    <input id="loginPassword" type="password" required placeholder="비밀번호" />
                 </div>
-                
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary" id="loginBtn">
-                        로그인
-                    </button>
+                    <button id="loginBtn" class="btn btn-primary" type="submit">로그인</button>
                 </div>
             </form>
-            
-            <div class="auth-switch">
-                계정이 없으신가요? <a id="showSignup">회원가입</a>
+
+            <div style="margin-top:10px;text-align:center" class="small">
+                계정이 없으신가요? <a id="showSignup" style="color:var(--primary);cursor:pointer">회원가입</a>
             </div>
         </div>
     </div>
 
-    <!-- ==================== 회원가입 화면 ==================== -->
-    <div class="auth-container" id="signupContainer">
-        <div class="auth-box">
+    <div class="auth-container" id="signupContainer" style="display:none">
+        <div class="auth-box" style="padding:28px;max-width:420px">
             <div class="auth-logo">
                 <h1>💬 ChatApp</h1>
-                <p>새로운 계정을 만들어보세요</p>
+                <p class="small">새 계정을 만들어보세요</p>
             </div>
-            
+
             <div class="error-message" id="signupError"></div>
             <div class="success-message" id="signupSuccess"></div>
-            
+
             <form id="signupForm">
                 <div class="form-group">
                     <label for="signupUsername">아이디</label>
-                    <input type="text" id="signupUsername" placeholder="영문, 숫자 4-20자" required minlength="4" maxlength="20" pattern="[a-zA-Z0-9]+">
-                    <div class="input-hint">영문과 숫자만 사용 가능합니다</div>
+                    <input id="signupUsername" type="text" required placeholder="영문숫자 4-20자" />
                 </div>
-
                 <div class="form-group">
                     <label for="signupEmail">이메일</label>
-                    <input type="email" id="signupEmail" placeholder="email@example.com" required>
-                    <div class="input-hint">유효한 이메일을 입력하세요</div>
+                    <input id="signupEmail" type="email" required placeholder="email@example.com" />
                 </div>
-                
                 <div class="form-group">
                     <label for="signupName">이름</label>
-                    <input type="text" id="signupName" placeholder="홍길동" required>
+                    <input id="signupName" type="text" required placeholder="홍길동" />
                 </div>
-                
                 <div class="form-group">
                     <label for="signupPassword">비밀번호</label>
-                    <input type="password" id="signupPassword" placeholder="6자 이상 입력하세요" required minlength="6">
+                    <input id="signupPassword" type="password" required placeholder="6자 이상" />
                 </div>
-                
                 <div class="form-group">
                     <label for="signupPasswordConfirm">비밀번호 확인</label>
-                    <input type="password" id="signupPasswordConfirm" placeholder="비밀번호를 다시 입력하세요" required>
+                    <input id="signupPasswordConfirm" type="password" required placeholder="비밀번호 확인" />
                 </div>
-                
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary" id="signupBtn">
-                        회원가입
-                    </button>
-                    <button type="button" class="btn btn-secondary" id="backToLogin">돌아가기</button>
+                    <button id="signupBtn" class="btn btn-primary" type="submit">회원가입</button>
+                    <button id="backToLogin" type="button" class="btn btn-secondary">돌아가기</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- ==================== 메인 애플리케이션 ==================== -->
-    <div class="main-app" id="mainApp">
-        <!-- 사이드바 네비게이션 -->
+    <!-- 메인 앱 -->
+    <div class="main-app" id="mainApp" style="display:none">
         <nav class="sidebar-nav">
             <div class="nav-logo">💬</div>
-            
             <div class="nav-items">
-                <button class="nav-item active" data-view="friends" title="친구">
-                    👥
-                </button>
-                <button class="nav-item" data-view="messages" title="메시지">
-                    💬
-                    <span class="badge" id="unreadBadge" style="display: none;">0</span>
-                </button>
+                <button class="nav-item active" data-view="friends" title="친구">👥</button>
+                <button class="nav-item" data-view="messages" title="메시지">💬 <span id="unreadBadge" style="display:none;position:absolute;right:6px;top:6px;background:var(--error);color:#fff;border-radius:50%;padding:2px 6px;font-size:11px"></span></button>
             </div>
-            
-            <div class="nav-user" id="userProfile" title="설정 열기"></div>
-            <button class="nav-settings" id="openSettings" title="설정">⚙️</button>
+
+            <div class="nav-user" id="userProfile" title="설정 열기">U</div>
             <button class="logout-btn" id="logoutBtn" title="로그아웃">🚪</button>
         </nav>
 
-        <!-- ==================== 친구 목록 패널 ==================== -->
-        <aside class="friends-panel active" id="friendsPanel">
+        <aside class="friends-panel" id="friendsPanel">
             <div class="panel-header">
-                <h2>친구</h2>
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" placeholder="친구 검색..." id="friendSearch">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <h2>친구</h2>
+                    <div class="small" style="color:var(--text-secondary)"> • 사람 / 그룹 관리</div>
+                </div>
+                <div class="panel-header small-actions">
+                    <div class="search-box" style="width:220px">
+                        <span class="search-icon">🔍</span>
+                        <input id="friendSearch" placeholder="친구 검색..." />
+                    </div>
+                    <button id="openCreateGroup" class="btn btn-secondary" style="padding:8px 12px">그룹 만들기</button>
                 </div>
             </div>
 
             <div class="panel-tabs" id="friendsTabs">
                 <button class="tab-btn active" data-tab="friends-list">친구 목록</button>
-                <button class="tab-btn" data-tab="requests">친구 요청 <span id="requestCount" style="margin-left:6px;color:var(--text-secondary)"></span></button>
+                <button class="tab-btn" data-tab="requests">요청 <span id="requestCount" class="small"></span></button>
                 <button class="tab-btn" data-tab="add-friend">친구 추가</button>
             </div>
 
             <div class="panel-content">
-                <!-- 친구 목록 -->
-                <div class="tab-content active" id="friendsList">
+                <div id="friendsList">
                     <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <h3>친구가 없습니다</h3>
-                        <p>친구를 추가해보세요!</p>
+                        <div style="font-size:36px;margin-bottom:8px">👥</div>
+                        <div>친구가 없습니다</div>
+                        <div class="small">친구 요청을 보내보세요</div>
                     </div>
                 </div>
 
-                <!-- 친구 요청 -->
-                <div class="tab-content" id="friendRequests" style="display:none;">
+                <div id="friendRequests" style="display:none">
                     <div id="requestsList">
                         <div class="empty-state">
-                            <div class="empty-state-icon">📨</div>
-                            <h3>친구 요청이 없습니다</h3>
-                            <p>받은 요청이 표시됩니다</p>
+                            <div style="font-size:36px;margin-bottom:8px">📨</div>
+                            <div>친구 요청이 없습니다</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 친구 추가 -->
-                <div class="tab-content" id="addFriend" style="display: none;">
-                    <div class="add-friend-form">
+                <div id="addFriend" style="display:none">
+                    <div style="padding:12px">
                         <div class="error-message" id="addFriendError"></div>
                         <div class="success-message" id="addFriendSuccess"></div>
                         <div class="form-group">
                             <label>친구 아이디</label>
-                            <input type="text" id="friendUsername" placeholder="friend123">
-                            <div class="input-hint">친구의 아이디를 입력하세요</div>
+                            <input id="friendUsername" placeholder="friend123" />
                         </div>
-                        <button class="btn btn-primary" id="addFriendBtn">친구 요청 보내기</button>
+                        <div style="display:flex;gap:8px">
+                            <button id="addFriendBtn" class="btn btn-primary">요청 보내기</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- ==================== 메시지 목록 패널 ==================== -->
-        <aside class="messages-panel" id="messagesPanel">
+        <aside class="messages-panel" id="messagesPanel" style="display:flex">
             <div class="panel-header">
                 <h2>메시지</h2>
                 <div class="search-box">
                     <span class="search-icon">🔍</span>
-                    <input type="text" placeholder="대화 검색...">
+                    <input placeholder="대화 검색..." />
                 </div>
             </div>
 
             <div class="panel-content" id="chatList">
                 <div class="empty-state">
-                    <div class="empty-state-icon">💬</div>
-                    <h3>메시지가 없습니다</h3>
-                    <p>친구에게 메시지를 보내보세요!</p>
+                    <div style="font-size:36px;margin-bottom:8px">💬</div>
+                    <div>메시지가 없습니다</div>
                 </div>
             </div>
         </aside>
 
-        <!-- ==================== 채팅 영역 ==================== -->
         <main class="chat-area" id="chatArea">
             <div class="empty-state">
-                <div class="empty-state-icon">💬</div>
-                <h3>대화를 선택하세요</h3>
-                <p>친구를 선택하여 메시지를 시작하세요</p>
+                <div style="font-size:36px;margin-bottom:8px">💬</div>
+                <div>대화를 선택하세요</div>
             </div>
         </main>
     </div>
 
-    <!-- 설정 모달 -->
-    <div class="modal-backdrop" id="settingsModal">
+    <!-- Emoji panel -->
+    <div id="emojiPanel" class="emoji-panel" aria-hidden="true"></div>
+
+    <!-- Group creation modal -->
+    <div class="modal-backdrop" id="createGroupModal">
         <div class="modal">
-            <h3>계정 설정</h3>
-            <div class="error-message" id="settingsError"></div>
-            <div class="success-message" id="settingsSuccess"></div>
+            <h3>그룹 만들기</h3>
             <div class="form-group">
-                <label>이름</label>
-                <input type="text" id="settingsName" placeholder="이름">
+                <label>그룹 이름</label>
+                <input id="groupNameInput" placeholder="그룹 이름을 입력하세요" />
             </div>
-            <div class="form-group">
-                <label>상태 메시지</label>
-                <input type="text" id="settingsStatus" placeholder="상태 메시지">
+            <div class="form-group" style="max-height:240px;overflow:auto;border:1px solid var(--border);padding:8px;border-radius:8px">
+                <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">멤버 선택</div>
+                <div id="groupMembersList" style="display:flex;flex-direction:column;gap:6px"></div>
             </div>
-
-            <hr style="border-color:var(--border);margin:12px 0;">
-
-            <h4 style="margin-bottom:8px;">비밀번호 변경</h4>
-            <div class="form-group">
-                <label>현재 비밀번호</label>
-                <input type="password" id="currentPassword" placeholder="현재 비밀번호">
-            </div>
-            <div class="form-group">
-                <label>새 비밀번호</label>
-                <input type="password" id="newPassword" placeholder="새 비밀번호 (6자 이상)">
-            </div>
-            <div class="form-group">
-                <label>새 비밀번호 확인</label>
-                <input type="password" id="confirmNewPassword" placeholder="새 비밀번호 확인">
-            </div>
-
-            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
-                <button class="btn btn-secondary" id="closeSettings">취소</button>
-                <button class="btn btn-primary" id="saveSettingsBtn">저장</button>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+                <button class="btn btn-secondary" id="cancelCreateGroup">취소</button>
+                <button class="btn btn-primary" id="createGroupBtn">그룹 생성</button>
             </div>
         </div>
     </div>
 
-    <!-- Hidden file input for attachments -->
-    <input type="file" id="fileInput" accept="image/*" style="display:none">
-
-    <!-- Emoji panel (created in JS) -->
-    <div id="emojiPanel" class="emoji-panel" aria-hidden="true"></div>
-
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (database only) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import {
             getDatabase, ref, set, push, onValue, get, update, off
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import {
-            getStorage, ref as storageRef, uploadBytes, getDownloadURL
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        // Firebase 설정 (기존 설정 유지)
+        // Firebase 설정 (기존 값 유지)
         const firebaseConfig = {
             apiKey: "AIzaSyDyAtNIrWfsROkqi8op6zynWZfjBwEMeh8",
             authDomain: "mess-db5a2.firebaseapp.com",
@@ -1290,998 +304,519 @@
             measurementId: "G-W6LN7XGMZB"
         };
 
-        // Firebase 초기화
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const storage = getStorage(app);
 
         let currentUser = null;
         let currentChatId = null;
-        let currentChatUser = null;
+        let currentChatMeta = null; // { type: 'user'|'group', id, data }
 
-        // 리스너 참조(중복 등록 방지/해제용)
+        // listeners
         let friendsRef = null;
         let chatsRef = null;
         let messagesRef = null;
         let requestsRef = null;
 
-        // 금지 문자(., #, $, [, ])를 안전한 키로 변환
-        function sanitizeKey(str) {
-            if (!str || typeof str !== 'string') return str;
-            return str.replace(/[.#$\[\]]/g, (c) => {
-                return '%' + c.charCodeAt(0).toString(16);
-            });
-        }
+        function sanitizeKey(str) { if (!str || typeof str !== 'string') return str; return str.replace(/[.#$\[\]]/g, (c) => '%' + c.charCodeAt(0).toString(16)); }
 
-        // EMOJI 리스트 (full list used by emoji panel)
-        const EMOJIS_FULL = ['😀','😁','😂','🤣','😊','😍','😘','🤗','🤔','😎','😭','😅','😇','🤩','😴','👍','👎','👏','🙏','🎉','❤️','🔥','💯','🤝','🤞','🙌','😬','😡','🤖','🌸','🍕','☕','😃','🙂','🙃','😋','😜','😇','🤤','😇','😱','😳','😐','😑','😶','😏','😒','😓','😔','😕','😖','😞','😤','😠','😪','🤒','🤕','🤧','🥳','🤠','🤡','👻','💩','👍🏻','👍🏼','👍🏽','👍🏾','👍🏿'];
+        // UI elements
+        const loginContainer = document.getElementById('loginContainer');
+        const signupContainer = document.getElementById('signupContainer');
+        const mainApp = document.getElementById('mainApp');
 
-        // ==================== 로컬 스토리지에서 사용자 정보 확인 ====================
-        function checkLoginStatus() {
-            const savedUser = localStorage.getItem('chatAppUser');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showMainApp();
-                loadUserData();
-                loadFriends();
-                loadChats();
-                loadFriendRequests(); // 요청 로드 시작
-                updateUserStatus(true);
-            } else {
-                showLogin();
-            }
-        }
+        function showLogin(){ loginContainer.style.display=''; signupContainer.style.display='none'; mainApp.style.display='none' }
+        function showSignup(){ loginContainer.style.display='none'; signupContainer.style.display=''; mainApp.style.display='none' }
+        function showMainApp(){ loginContainer.style.display='none'; signupContainer.style.display='none'; mainApp.style.display='' }
 
-        function showLogin() {
-            document.getElementById('loginContainer').classList.add('active');
-            document.getElementById('signupContainer').classList.remove('active');
-            document.getElementById('mainApp').classList.remove('active');
-        }
-
-        function showMainApp() {
-            document.getElementById('loginContainer').classList.remove('active');
-            document.getElementById('signupContainer').classList.remove('active');
-            document.getElementById('mainApp').classList.add('active');
-        }
-
-        // ==================== 회원가입 ====================
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        // Signup
+        document.getElementById('signupForm').addEventListener('submit', async (e)=>{
             e.preventDefault();
-            
             const username = document.getElementById('signupUsername').value.trim().toLowerCase();
             const email = document.getElementById('signupEmail').value.trim().toLowerCase();
             const name = document.getElementById('signupName').value.trim();
-            const password = document.getElementById('signupPassword').value;
-            const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
-            const errorDiv = document.getElementById('signupError');
-            const successDiv = document.getElementById('signupSuccess');
-            const signupBtn = document.getElementById('signupBtn');
-            
-            errorDiv.classList.remove('show');
-            successDiv.classList.remove('show');
-            
-            // 유효성 검사
-            if (!/^[a-zA-Z0-9]+$/.test(username)) {
-                errorDiv.textContent = '아이디는 영문과 숫자만 사용 가능합니다.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            if (username.length < 4 || username.length > 20) {
-                errorDiv.textContent = '아이디는 4-20자 사이여야 합니다.';
-                errorDiv.classList.add('show');
-                return;
-            }
+            const pwd = document.getElementById('signupPassword').value;
+            const pwdConfirm = document.getElementById('signupPasswordConfirm').value;
+            const err = document.getElementById('signupError');
+            const ok = document.getElementById('signupSuccess');
+            err.classList.remove('show'); ok.classList.remove('show');
+            const btn = document.getElementById('signupBtn');
 
-            // 이메일 기본 체크
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test(email)) {
-                errorDiv.textContent = '유효한 이메일을 입력하세요.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            if (password !== passwordConfirm) {
-                errorDiv.textContent = '비밀번호가 일치하지 않습니다.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            if (password.length < 6) {
-                errorDiv.textContent = '비밀번호는 6자 이상이어야 합니다.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            signupBtn.disabled = true;
-            signupBtn.innerHTML = '<span class="spinner"></span> 가입 중...';
-            
+            if (!/^[a-zA-Z0-9]{4,20}$/.test(username)) { err.textContent='아이디는 영문/숫자 4-20자입니다.'; err.classList.add('show'); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent='유효한 이메일을 입력하세요.'; err.classList.add('show'); return; }
+            if (pwd.length < 6) { err.textContent='비밀번호는 6자 이상입니다.'; err.classList.add('show'); return; }
+            if (pwd !== pwdConfirm) { err.textContent='비밀번호가 일치하지 않습니다.'; err.classList.add('show'); return; }
+
+            btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 가입 중...';
             try {
-                // 아이디 중복 확인
-                const userSnapshot = await get(ref(database, `usernames/${username}`));
-                if (userSnapshot.exists()) {
-                    errorDiv.textContent = '이미 사용 중인 아이디입니다.';
-                    errorDiv.classList.add('show');
-                    signupBtn.disabled = false;
-                    signupBtn.textContent = '회원가입';
-                    return;
-                }
-
-                // 이메일 중복 확인 (sanitizeKey 사용)
+                const usernameSnap = await get(ref(database, `usernames/${username}`));
+                if (usernameSnap.exists()) { err.textContent='이미 사용중인 아이디입니다.'; err.classList.add('show'); return; }
                 const emailKey = sanitizeKey(email);
-                const emailSnapshot = await get(ref(database, `emails/${emailKey}`));
-                if (emailSnapshot.exists()) {
-                    errorDiv.textContent = '이미 사용 중인 이메일입니다.';
-                    errorDiv.classList.add('show');
-                    signupBtn.disabled = false;
-                    signupBtn.textContent = '회원가입';
-                    return;
-                }
-                
-                // 고유 ID 생성
-                const userId = push(ref(database, 'users')).key;
-                
-                // 비밀번호 해시 (간단한 예시, 실제로는 더 강력한 암호화 필요)
-                const hashedPassword = btoa(password);
-                
-                // 사용자 정보 저장
-                await set(ref(database, `users/${userId}`), {
-                    username: username,
-                    email: email,
-                    name: name,
-                    password: hashedPassword,
-                    status: '안녕하세요!',
-                    createdAt: Date.now(),
-                    online: false
-                });
-                
-                // 아이디-유저ID 매핑 저장
-                await set(ref(database, `usernames/${username}`), userId);
+                const emailSnap = await get(ref(database, `emails/${emailKey}`));
+                if (emailSnap.exists()) { err.textContent='이미 사용중인 이메일입니다.'; err.classList.add('show'); return; }
 
-                // 이메일-유저ID 매핑 저장 (sanitizeKey 사용)
+                const userId = push(ref(database,'users')).key;
+                await set(ref(database, `users/${userId}`), {
+                    username, email, name, password: btoa(pwd), status: '안녕하세요!', createdAt: Date.now(), online:false
+                });
+                await set(ref(database, `usernames/${username}`), userId);
                 await set(ref(database, `emails/${emailKey}`), userId);
-                
-                successDiv.textContent = '회원가입이 완료되었습니다! 로그인해주세요.';
-                successDiv.classList.add('show');
-                
-                // 폼 초기화
+                ok.textContent='회원가입 완료! 로그인하세요.'; ok.classList.add('show');
                 document.getElementById('signupForm').reset();
-                
-                // 2초 후 로그인 화면으로
-                setTimeout(() => {
-                    document.getElementById('signupContainer').classList.remove('active');
-                    document.getElementById('loginContainer').classList.add('active');
-                }, 2000);
-                
-            } catch (error) {
-                console.error('회원가입 에러:', error);
-                errorDiv.textContent = '회원가입 중 오류가 발생했습니다: ' + error.message;
-                errorDiv.classList.add('show');
-            } finally {
-                signupBtn.disabled = false;
-                signupBtn.textContent = '회원가입';
-            }
+                setTimeout(showLogin,1200);
+            } catch (e){ console.error(e); err.textContent='회원가입 오류: '+(e.message||e); err.classList.add('show'); }
+            finally { btn.disabled=false; btn.textContent='회원가입' }
         });
 
-        // ==================== 로그인 ====================
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e)=>{
             e.preventDefault();
-            
             const identifier = document.getElementById('loginUsername').value.trim().toLowerCase();
-            const password = document.getElementById('loginPassword').value;
-            const errorDiv = document.getElementById('loginError');
-            const loginBtn = document.getElementById('loginBtn');
-            
-            errorDiv.classList.remove('show');
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="spinner"></span> 로그인 중...';
-            
+            const pwd = document.getElementById('loginPassword').value;
+            const err = document.getElementById('loginError');
+            err.classList.remove('show');
+            const btn = document.getElementById('loginBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 로그인 중...';
             try {
                 let userId = null;
-
-                const usernameSnapshot = await get(ref(database, `usernames/${identifier}`));
-                if (usernameSnapshot.exists()) {
-                    userId = usernameSnapshot.val();
-                } else {
+                const usernameSnap = await get(ref(database, `usernames/${identifier}`));
+                if (usernameSnap.exists()) userId = usernameSnap.val();
+                else {
                     const emailKey = sanitizeKey(identifier);
-                    const emailSnapshot = await get(ref(database, `emails/${emailKey}`));
-                    if (emailSnapshot.exists()) {
-                        userId = emailSnapshot.val();
-                    }
+                    const emailSnap = await get(ref(database, `emails/${emailKey}`));
+                    if (emailSnap.exists()) userId = emailSnap.val();
                 }
+                if (!userId) { err.textContent='존재하지 않는 계정입니다.'; err.classList.add('show'); return; }
+                const userSnap = await get(ref(database, `users/${userId}`));
+                if (!userSnap.exists()) { err.textContent='사용자 정보를 찾을 수 없습니다.'; err.classList.add('show'); return; }
+                const data = userSnap.val();
+                if (data.password !== btoa(pwd)) { err.textContent='비밀번호가 올바르지 않습니다.'; err.classList.add('show'); return; }
 
-                if (!userId) {
-                    errorDiv.textContent = '존재하지 않는 아이디 또는 이메일입니다.';
-                    errorDiv.classList.add('show');
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = '로그인';
-                    return;
-                }
-                
-                const userSnapshot = await get(ref(database, `users/${userId}`));
-                
-                if (!userSnapshot.exists()) {
-                    errorDiv.textContent = '사용자 정보를 찾을 수 없습니다.';
-                    errorDiv.classList.add('show');
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = '로그인';
-                    return;
-                }
-                
-                const userData = userSnapshot.val();
-                const hashedPassword = btoa(password);
-                
-                if (userData.password !== hashedPassword) {
-                    errorDiv.textContent = '비밀번호가 올바르지 않습니다.';
-                    errorDiv.classList.add('show');
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = '로그인';
-                    return;
-                }
-                
-                // 로그인 성공
-                currentUser = {
-                    uid: userId,
-                    username: userData.username,
-                    name: userData.name,
-                    email: userData.email || '',
-                    status: userData.status
-                };
-                
-                // 로컬 스토리지에 저장
+                currentUser = { uid:userId, username:data.username, name:data.name, email:data.email||'', status:data.status||'' };
                 localStorage.setItem('chatAppUser', JSON.stringify(currentUser));
-                
-                // 온라인 상태로 업데이트
-                await updateUserStatus(true);
-                
-                // 메인 앱 표시
+                await update(ref(database, `users/${currentUser.uid}`), { online:true, lastSeen:Date.now() });
                 showMainApp();
-                loadUserData();
-                loadFriends();
-                loadChats();
-                loadFriendRequests();
-                
-            } catch (error) {
-                console.error('로그인 에러:', error);
-                errorDiv.textContent = '로그인 중 오류가 발생했습니다: ' + error.message;
-                errorDiv.classList.add('show');
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.textContent = '로그인';
-            }
+                loadUserData(); loadFriends(); loadChats(); loadFriendRequests();
+            } catch (e) { console.error(e); err.textContent='로그인 오류: '+(e.message||e); err.classList.add('show'); }
+            finally { btn.disabled=false; btn.textContent='로그인' }
         });
 
-        // ==================== 로그아웃 ====================
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            if (confirm('로그아웃 하시겠습니까?')) {
-                try {
-                    await updateUserStatus(false);
-                    cleanupAllListeners();
-
-                    localStorage.removeItem('chatAppUser');
-                    currentUser = null;
-                    showLogin();
-                } catch (error) {
-                    console.error('로그아웃 에러:', error);
-                    alert('로그아웃 중 오류가 발생했습니다.');
-                }
-            }
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+            if (!confirm('로그아웃 하시겠습니까?')) return;
+            try { if (currentUser) await update(ref(database, `users/${currentUser.uid}`), { online:false, lastSeen:Date.now() }); } catch(e){}
+            cleanupAllListeners(); localStorage.removeItem('chatAppUser'); currentUser=null; showLogin();
         });
 
-        // ==================== 사용자 데이터 로드 ====================
-        function loadUserData() {
+        // Init from storage
+        (function initFromStorage(){
+            const saved = localStorage.getItem('chatAppUser');
+            if (saved) { currentUser = JSON.parse(saved); showMainApp(); loadUserData(); loadFriends(); loadChats(); loadFriendRequests(); update(ref(database, `users/${currentUser.uid}`), { online:true, lastSeen:Date.now() }).catch(()=>{}); }
+            else showLogin();
+        })();
+
+        // load user UI
+        function loadUserData(){ if (!currentUser) return; const el=document.getElementById('userProfile'); el.textContent = currentUser.username ? currentUser.username.charAt(0).toUpperCase() : (currentUser.name?currentUser.name.charAt(0).toUpperCase():'U') }
+
+        // friends & requests
+        async function loadFriends(){
             if (!currentUser) return;
-            const profileEl = document.getElementById('userProfile');
-            const label = currentUser.username ? currentUser.username.charAt(0).toUpperCase() : (currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U');
-            profileEl.textContent = label;
-        }
-
-        // ==================== 온라인 상태 업데이트 ====================
-        async function updateUserStatus(online) {
-            if (!currentUser) return;
-            
-            try {
-                await update(ref(database, `users/${currentUser.uid}`), {
-                    online: online,
-                    lastSeen: Date.now()
-                });
-            } catch (error) {
-                console.error('상태 업데이트 에러:', error);
-            }
-        }
-
-        // ==================== 친구 요청 발송 ====================
-        document.getElementById('addFriendBtn').addEventListener('click', async () => {
-            const username = document.getElementById('friendUsername').value.trim().toLowerCase();
-            const errorDiv = document.getElementById('addFriendError');
-            const successDiv = document.getElementById('addFriendSuccess');
-            const addBtn = document.getElementById('addFriendBtn');
-            
-            errorDiv.classList.remove('show');
-            successDiv.classList.remove('show');
-            
-            if (!username) {
-                errorDiv.textContent = '아이디를 입력해주세요.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            if (username === currentUser.username) {
-                errorDiv.textContent = '자기 자신에게 요청을 보낼 수 없습니다.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            addBtn.disabled = true;
-            addBtn.innerHTML = '<span class="spinner"></span> 요청 중...';
-            
-            try {
-                const usernameSnapshot = await get(ref(database, `usernames/${username}`));
-                
-                if (!usernameSnapshot.exists()) {
-                    errorDiv.textContent = '해당 아이디의 사용자를 찾을 수 없습니다.';
-                    errorDiv.classList.add('show');
-                    addBtn.disabled = false;
-                    addBtn.textContent = '친구 요청 보내기';
-                    return;
-                }
-                
-                const friendId = usernameSnapshot.val();
-
-                const friendCheck = await get(ref(database, `friends/${currentUser.uid}/${friendId}`));
-                if (friendCheck.exists()) {
-                    errorDiv.textContent = '이미 친구로 등록되어 있습니다.';
-                    errorDiv.classList.add('show');
-                    addBtn.disabled = false;
-                    addBtn.textContent = '친구 요청 보내기';
-                    return;
-                }
-
-                const existingRequest = await get(ref(database, `friendRequests/${friendId}/${currentUser.uid}`));
-                if (existingRequest.exists()) {
-                    errorDiv.textContent = '이미 친구 요청을 보냈습니다.';
-                    errorDiv.classList.add('show');
-                    addBtn.disabled = false;
-                    addBtn.textContent = '친구 요청 보내기';
-                    return;
-                }
-
-                await set(ref(database, `friendRequests/${friendId}/${currentUser.uid}`), {
-                    from: currentUser.uid,
-                    username: currentUser.username,
-                    name: currentUser.name || '',
-                    timestamp: Date.now(),
-                    status: 'pending'
-                });
-
-                successDiv.textContent = '친구 요청을 보냈습니다!';
-                successDiv.classList.add('show');
-                document.getElementById('friendUsername').value = '';
-            } catch (error) {
-                console.error('친구 요청 에러:', error);
-                errorDiv.textContent = '친구 요청 중 오류가 발생했습니다: ' + error.message;
-                errorDiv.classList.add('show');
-            } finally {
-                addBtn.disabled = false;
-                addBtn.textContent = '친구 요청 보내기';
-            }
-        });
-
-        // ==================== 친구 목록, 요청, 채팅 로드 및 기타 함수 ====================
-        function loadFriends() {
-            if (!currentUser) return;
-
-            if (friendsRef) {
-                try { off(friendsRef); } catch (e) { /* ignore */ }
-            }
-
+            if (friendsRef) { try { off(friendsRef); } catch(e){} }
             friendsRef = ref(database, `friends/${currentUser.uid}`);
-            onValue(friendsRef, async (snapshot) => {
-                const friendsList = document.getElementById('friendsList');
-                friendsList.innerHTML = '';
-                
-                if (!snapshot.exists()) {
-                    friendsList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">👥</div>
-                            <h3>친구가 없습니다</h3>
-                            <p>친구를 추가해보세요!</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                const friendIds = Object.keys(snapshot.val());
-                
-                for (const friendId of friendIds) {
-                    const userSnapshot = await get(ref(database, `users/${friendId}`));
-                    if (userSnapshot.exists()) {
-                        const friendData = userSnapshot.val();
-                        const initial = friendData.username ? friendData.username.charAt(0).toUpperCase() : '?';
-                        const onlineClass = friendData.online ? 'online' : '';
-                        
-                        const friendItem = document.createElement('div');
-                        friendItem.className = 'friend-item';
-                        friendItem.innerHTML = `
-                            <div class="friend-avatar ${onlineClass}">${initial}</div>
-                            <div class="friend-info">
-                                <div class="friend-name">${friendData.name || '이름 없음'}</div>
-                                <div class="friend-username">@${friendData.username}</div>
-                                <div class="friend-status">${friendData.status || ''}</div>
-                            </div>
-                        `;
-                        
-                        friendItem.addEventListener('click', () => {
-                            openChat(friendId, friendData);
-                        });
-                        
-                        friendsList.appendChild(friendItem);
-                    }
+            onValue(friendsRef, async (snap)=>{
+                const container = document.getElementById('friendsList'); container.innerHTML='';
+                if (!snap.exists()){ container.innerHTML = `<div class="empty-state"><div style="font-size:36px;margin-bottom:8px">👥</div><div>친구가 없습니다</div></div>`; return; }
+                const ids = Object.keys(snap.val());
+                for (const fid of ids){
+                    const uSnap = await get(ref(database, `users/${fid}`));
+                    if (!uSnap.exists()) continue;
+                    const u = uSnap.val();
+                    const item = document.createElement('div'); item.className='friend-item';
+                    item.innerHTML = `<div class="friend-avatar ${u.online?'online':''}">${u.username?u.username.charAt(0).toUpperCase():'?'}</div>
+                        <div style="flex:1;min-width:0"><div style="font-weight:700">${u.name||'이름 없음'}</div><div class="small">@${u.username||''} • ${u.status||''}</div></div>`;
+                    item.addEventListener('click', ()=> openChat({ type:'user', id: fid, data: u }));
+                    container.appendChild(item);
                 }
             });
         }
 
-        function loadFriendRequests() {
+        function loadFriendRequests(){
             if (!currentUser) return;
-
-            if (requestsRef) {
-                try { off(requestsRef); } catch (e) { /* ignore */ }
-            }
-
+            if (requestsRef) { try { off(requestsRef); } catch(e){} }
             requestsRef = ref(database, `friendRequests/${currentUser.uid}`);
-            onValue(requestsRef, async (snapshot) => {
-                const requestsList = document.getElementById('requestsList');
-                const requestCountEl = document.getElementById('requestCount');
-                requestsList.innerHTML = '';
-
-                if (!snapshot.exists()) {
-                    requestsList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📨</div>
-                            <h3>친구 요청이 없습니다</h3>
-                            <p>받은 요청이 표시됩니다</p>
-                        </div>
-                    `;
-                    requestCountEl.textContent = '';
-                    return;
-                }
-
-                const reqs = snapshot.val();
-                const entries = Object.entries(reqs);
-                requestCountEl.textContent = `(${entries.length})`;
-
-                for (const [senderId, reqData] of entries) {
-                    const userSnap = await get(ref(database, `users/${senderId}`));
-                    const sender = userSnap.exists() ? userSnap.val() : {
-                        username: reqData.username || 'unknown',
-                        name: reqData.name || '이름 없음'
-                    };
-                    const initial = sender.username ? sender.username.charAt(0).toUpperCase() : '?';
-
-                    const item = document.createElement('div');
-                    item.className = 'friend-item';
-                    item.innerHTML = `
-                        <div class="friend-avatar">${initial}</div>
-                        <div class="friend-info">
-                            <div class="friend-name">${sender.name || '이름 없음'}</div>
-                            <div class="friend-username">@${sender.username || ''}</div>
-                            <div class="friend-status">요청 보냄 • ${new Date(reqData.timestamp || Date.now()).toLocaleString()}</div>
-                        </div>
-                        <div class="request-actions">
-                            <button class="btn btn-secondary btn-reject" data-id="${senderId}">거절</button>
-                            <button class="btn btn-primary btn-accept" data-id="${senderId}">수락</button>
-                        </div>
-                    `;
-
-                    item.querySelector('.btn-accept').addEventListener('click', async () => {
-                        await acceptFriendRequest(senderId);
-                    });
-                    item.querySelector('.btn-reject').addEventListener('click', async () => {
-                        await rejectFriendRequest(senderId);
-                    });
-
-                    requestsList.appendChild(item);
+            onValue(requestsRef, async (snap)=>{
+                const list = document.getElementById('requestsList'); list.innerHTML=''; const countEl = document.getElementById('requestCount');
+                if (!snap.exists()){ list.innerHTML=`<div class="empty-state"><div style="font-size:36px;margin-bottom:8px">📨</div><div>친구 요청이 없습니다</div></div>`; countEl.textContent=''; return; }
+                const entries = Object.entries(snap.val());
+                countEl.textContent = `(${entries.length})`;
+                for (const [senderId,data] of entries){
+                    const uSnap = await get(ref(database, `users/${senderId}`));
+                    const u = uSnap.exists()?uSnap.val():{username:data.username||'unknown',name:data.name||'이름 없음'};
+                    const item = document.createElement('div'); item.className='friend-item';
+                    item.innerHTML = `<div class="friend-avatar">${u.username?u.username.charAt(0).toUpperCase():'?'}</div>
+                        <div style="flex:1;min-width:0"><div style="font-weight:700">${u.name||'이름 없음'}</div><div class="small">@${u.username||''} • 요청: ${new Date(data.timestamp||Date.now()).toLocaleString()}</div></div>
+                        <div style="display:flex;gap:6px"><button class="btn btn-secondary btn-reject" data-id="${senderId}">거절</button><button class="btn btn-primary btn-accept" data-id="${senderId}">수락</button></div>`;
+                    item.querySelector('.btn-accept').addEventListener('click', ()=> acceptFriendRequest(senderId));
+                    item.querySelector('.btn-reject').addEventListener('click', ()=> rejectFriendRequest(senderId));
+                    list.appendChild(item);
                 }
             });
         }
 
-        async function acceptFriendRequest(senderId) {
+        async function acceptFriendRequest(senderId){
             if (!currentUser) return;
             try {
                 await set(ref(database, `friends/${currentUser.uid}/${senderId}`), { addedAt: Date.now() });
                 await set(ref(database, `friends/${senderId}/${currentUser.uid}`), { addedAt: Date.now() });
                 await set(ref(database, `friendRequests/${currentUser.uid}/${senderId}`), null);
                 alert('친구 요청을 수락했습니다.');
-                loadFriends();
-            } catch (err) {
-                console.error('수락 에러:', err);
-                alert('요청 수락 중 오류가 발생했습니다.');
-            }
+            } catch(e){ console.error(e); alert('수락 오류') }
         }
-
-        async function rejectFriendRequest(senderId) {
+        async function rejectFriendRequest(senderId){
             if (!currentUser) return;
-            try {
-                await set(ref(database, `friendRequests/${currentUser.uid}/${senderId}`), null);
-                alert('친구 요청을 거절했습니다.');
-            } catch (err) {
-                console.error('거절 에러:', err);
-                alert('요청 거절 중 오류가 발생했습니다.');
-            }
+            try { await set(ref(database, `friendRequests/${currentUser.uid}/${senderId}`), null); alert('거절 완료'); } catch(e){ console.error(e); alert('거절 오류') }
         }
 
-        // ==================== 채팅 관련 (openChat / setupMessageInput / emoji panel) ====================
-        function openChat(friendId, friendData) {
-            currentChatUser = { id: friendId, data: friendData };
-            currentChatId = [currentUser.uid, friendId].sort().join('_');
+        // Send friend request
+        document.getElementById('addFriendBtn').addEventListener('click', async ()=>{
+            const username = document.getElementById('friendUsername').value.trim().toLowerCase();
+            const err = document.getElementById('addFriendError'); const ok = document.getElementById('addFriendSuccess'); err.classList.remove('show'); ok.classList.remove('show');
+            if (!username){ err.textContent='아이디를 입력하세요'; err.classList.add('show'); return; }
+            if (!currentUser){ err.textContent='로그인 후 시도하세요'; err.classList.add('show'); return; }
+            if (username === currentUser.username){ err.textContent='자기 자신은 불가'; err.classList.add('show'); return; }
+            const btn = document.getElementById('addFriendBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 요청 중...';
+            try {
+                const uSnap = await get(ref(database, `usernames/${username}`));
+                if (!uSnap.exists()){ err.textContent='사용자를 찾을 수 없습니다'; err.classList.add('show'); return; }
+                const recipientId = uSnap.val();
+                const fSnap = await get(ref(database, `friends/${currentUser.uid}/${recipientId}`));
+                if (fSnap.exists()){ err.textContent='이미 친구입니다'; err.classList.add('show'); return; }
+                const rSnap = await get(ref(database, `friendRequests/${recipientId}/${currentUser.uid}`));
+                if (rSnap.exists()){ err.textContent='이미 요청을 보냈습니다'; err.classList.add('show'); return; }
+                await set(ref(database, `friendRequests/${recipientId}/${currentUser.uid}`), { from: currentUser.uid, username: currentUser.username, name: currentUser.name||'', timestamp:Date.now(), status:'pending' });
+                ok.textContent='친구 요청을 보냈습니다'; ok.classList.add('show'); document.getElementById('friendUsername').value='';
+            } catch(e){ console.error(e); err.textContent='요청 중 오류: '+(e.message||e); err.classList.add('show'); }
+            finally{ btn.disabled=false; btn.textContent='요청 보내기' }
+        });
 
-            if (messagesRef) {
-                try { off(messagesRef); } catch (e) {}
-                messagesRef = null;
-            }
-
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+        // Chat open / group support
+        async function openChat(meta){
+            // meta: { type:'user'|'group', id, data }
+            if (!currentUser) return;
+            currentChatMeta = meta;
+            currentChatId = meta.id;
+            if (messagesRef) { try { off(messagesRef); } catch(e){} messagesRef=null; }
+            // switch to messages view
+            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
             document.querySelector('[data-view="messages"]').classList.add('active');
+            document.getElementById('friendsPanel').style.display='none';
+            document.getElementById('messagesPanel').style.display='flex';
+            document.getElementById('chatArea').style.display='flex';
 
-            document.getElementById('friendsPanel').classList.remove('active');
-            document.getElementById('messagesPanel').classList.add('active');
-            document.getElementById('chatArea').classList.add('active');
-
-            const initial = friendData.username ? friendData.username.charAt(0).toUpperCase() : '?';
-            const onlineStatus = friendData.online ? '온라인' : '오프라인';
-            const statusColor = friendData.online ? 'var(--success)' : 'var(--text-secondary)';
+            // build header
+            let headerHtml = '';
+            if (meta.type === 'user') {
+                const u = meta.data;
+                const initial = u.username ? u.username.charAt(0).toUpperCase() : '?';
+                const onlineStatus = u.online ? '온라인' : '오프라인';
+                headerHtml = `<div class="chat-header-left"><div class="friend-avatar" style="width:42px;height:42px;border-radius:50%">${initial}</div><div><div style="font-weight:700">${u.name||'이름 없음'}</div><div class="small">${onlineStatus} • ${u.status||''}</div></div></div>
+                <div><button id="emojiBtn" class="btn btn-secondary" style="padding:8px 10px">😊</button></div>`;
+            } else {
+                // group: fetch group meta if data not provided
+                let g = meta.data;
+                if (!g) {
+                    const gSnap = await get(ref(database, `groupChats/${meta.id}`));
+                    g = gSnap.exists()?gSnap.val():{ name:'그룹', members:{} };
+                }
+                const membersCount = g.members?Object.keys(g.members).length:0;
+                headerHtml = `<div class="chat-header-left"><div class="friend-avatar" style="width:42px;height:42px;border-radius:10px">👥</div><div><div style="font-weight:700">${g.name||'그룹 채팅'}</div><div class="small">${membersCount}명</div></div></div>
+                <div><button id="emojiBtn" class="btn btn-secondary" style="padding:8px 10px">😊</button></div>`;
+            }
 
             document.getElementById('chatArea').innerHTML = `
-                <div class="chat-header">
-                    <div class="chat-header-left">
-                        <div class="chat-header-avatar">${initial}</div>
-                        <div class="chat-header-details">
-                            <h3>${friendData.name || '이름 없음'}</h3>
-                            <div class="chat-header-status" style="color: ${statusColor}">
-                                ${friendData.online ? '<span class="status-dot"></span>' : ''}
-                                ${onlineStatus}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chat-actions">
-                        <button class="action-btn" title="검색">🔍</button>
-                        <button class="action-btn" title="통화">📞</button>
-                        <button class="action-btn" title="더보기">⋮</button>
-                    </div>
-                </div>
+                <div class="chat-header">${headerHtml}</div>
                 <div class="messages-container" id="messagesContainer"></div>
-                <div class="input-area">
-                    <div class="input-wrapper">
-                        <div class="input-actions">
-                            <button class="attachment-btn" id="attachBtn" title="파일 첨부">📎</button>
-                            <button class="attachment-btn" id="emojiBtn" title="이모티콘">😊</button>
-                        </div>
-                        <textarea 
-                            class="message-input" 
-                            placeholder="메시지를 입력하세요..." 
-                            rows="1"
-                            id="messageInput"
-                        ></textarea>
-                        <button class="send-btn" id="sendBtn" title="전송">➤</button>
-                    </div>
-                </div>
+                <div class="input-area"><div class="input-wrapper">
+                    <textarea id="messageInput" class="message-input" rows="1" placeholder="메시지를 입력하세요..."></textarea>
+                    <button id="sendBtn" class="send-btn">➤</button>
+                </div></div>
             `;
 
-            setupMessageInput();
-            loadMessages();
-            loadChatList();
+            setupMessageInput(); loadMessages();
 
-            update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), { unread: false }).catch(()=>{});
+            // mark unread false for this user
+            try { await update(ref(database, `chats/${currentUser.uid}/${currentChatId}`), { unread:false }); } catch(e){}
         }
 
-        function setupMessageInput() {
-            const messageInput = document.getElementById('messageInput');
+        function setupMessageInput(){
+            const textarea = document.getElementById('messageInput');
             const sendBtn = document.getElementById('sendBtn');
             const emojiBtn = document.getElementById('emojiBtn');
-            const attachBtn = document.getElementById('attachBtn');
-            const fileInput = document.getElementById('fileInput');
-            const emojiPanel = document.getElementById('emojiPanel');
-
-            if (!messageInput || !sendBtn) return;
-
-            messageInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-            });
-
+            if (!textarea || !sendBtn) return;
+            textarea.addEventListener('input', function(){ this.style.height='auto'; this.style.height = Math.min(this.scrollHeight,120)+'px'; });
+            textarea.addEventListener('keypress', function(e){ if (e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
             sendBtn.addEventListener('click', sendMessage);
 
-            messageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-
-            // Populate emoji panel with full EMOJIS_FULL list arranged into columns with 5 rows each (grid handles layout)
-            if (emojiPanel && emojiPanel.children.length === 0) {
-                emojiPanel.innerHTML = '';
-                for (const e of EMOJIS_FULL) {
-                    const btn = document.createElement('div');
-                    btn.className = 'emoji-item';
-                    btn.textContent = e;
-                    btn.addEventListener('click', () => {
-                        insertEmoji(e);
-                        emojiPanel.style.display = 'none';
-                        messageInput.focus();
-                    });
-                    emojiPanel.appendChild(btn);
+            // emoji panel: populate once
+            if (document.getElementById('emojiPanel').children.length===0){
+                const EMOJIS = ['😀','😁','😂','🤣','😊','😍','😘','🤗','🤔','😎','😭','😅','😇','🤩','😴','👍','👎','👏','🙏','🎉','❤️','🔥','💯','🤝','🤞','🙌','😬','😡','🤖','🌸','🍕','☕','🙂','🙃','😉','😋','😜','🤤','😱','😳','😐','😑','😶','😏','😒','😓','😔','😕','😖','😞','😤','😠','😪','🤒','🤕','🤧','🥳','🤠','🤡','👻','💩'];
+                const panel = document.getElementById('emojiPanel');
+                for (const e of EMOJIS){
+                    const d = document.createElement('div'); d.className='emoji-item'; d.textContent=e;
+                    d.addEventListener('click', ()=>{ insertEmoji(e); panel.style.display='none'; textarea.focus(); });
+                    panel.appendChild(d);
                 }
             }
 
-            // Toggle emoji panel
-            if (emojiBtn) {
-                emojiBtn.addEventListener('click', (ev) => {
+            if (emojiBtn){
+                emojiBtn.addEventListener('click', (ev)=>{
                     const panel = document.getElementById('emojiPanel');
                     if (!panel) return;
-                    panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+                    panel.style.display = (panel.style.display==='block') ? 'none' : 'block';
                 });
             }
 
-            // Outside click hides emoji panel
-            document.addEventListener('click', (ev) => {
+            document.addEventListener('click', (ev)=>{
                 const panel = document.getElementById('emojiPanel');
                 if (!panel) return;
-                if (ev.target.closest('#emojiPanel') || ev.target.id === 'emojiBtn') return;
+                if (ev.target.closest('#emojiPanel') || ev.target.id==='emojiBtn') return;
                 panel.style.display = 'none';
             });
-
-            // Attachment
-            if (attachBtn && fileInput) {
-                attachBtn.addEventListener('click', () => {
-                    fileInput.value = '';
-                    fileInput.click();
-                });
-
-                fileInput.addEventListener('change', async (ev) => {
-                    const file = ev.target.files && ev.target.files[0];
-                    if (!file) return;
-                    if (!currentChatId || !currentChatUser) {
-                        alert('대화를 먼저 열어주세요.');
-                        return;
-                    }
-
-                    attachBtn.disabled = true;
-                    attachBtn.innerHTML = '<span class="spinner"></span>';
-
-                    try {
-                        const safeName = encodeURIComponent(file.name.replace(/\s+/g,'_'));
-                        const path = `uploads/${currentUser.uid}/${Date.now()}_${safeName}`;
-                        const sRef = storageRef(storage, path);
-                        await uploadBytes(sRef, file);
-                        const url = await getDownloadURL(sRef);
-
-                        const messagesRefLocal = ref(database, `messages/${currentChatId}`);
-                        await push(messagesRefLocal, {
-                            type: 'image',
-                            imageUrl: url,
-                            filename: file.name,
-                            senderId: currentUser.uid,
-                            senderUsername: currentUser.username,
-                            timestamp: Date.now()
-                        });
-
-                        await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), {
-                            lastMessage: '[이미지]',
-                            lastMessageTime: Date.now(),
-                            unread: false
-                        });
-
-                        await update(ref(database, `chats/${currentChatUser.id}/${currentUser.uid}`), {
-                            lastMessage: '[이미지]',
-                            lastMessageTime: Date.now(),
-                            unread: true
-                        });
-                    } catch (err) {
-                        console.error('파일 업로드 오류', err);
-                        alert('파일 업로드 중 오류가 발생했습니다.');
-                    } finally {
-                        attachBtn.disabled = false;
-                        attachBtn.innerHTML = '📎';
-                    }
-                });
-            }
         }
 
-        function insertEmoji(emoji) {
+        function insertEmoji(emoji){
             const ta = document.getElementById('messageInput');
             if (!ta) return;
             const start = ta.selectionStart || ta.value.length;
             const end = ta.selectionEnd || start;
-            ta.value = ta.value.slice(0, start) + emoji + ta.value.slice(end);
+            ta.value = ta.value.slice(0,start) + emoji + ta.value.slice(end);
             ta.focus();
             ta.selectionStart = ta.selectionEnd = start + emoji.length;
             ta.dispatchEvent(new Event('input'));
         }
 
-        // ==================== 메시지 전송, 로드, 채팅 목록 등 ====================
-        async function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            if (!messageInput || !currentChatId) return;
-
-            const text = messageInput.value.trim();
-            if (text === '') return;
-
+        // sendMessage handles both user and group chats
+        async function sendMessage(){
+            const ta = document.getElementById('messageInput');
+            if (!ta || !currentChatId || !currentChatMeta) return;
+            const text = ta.value.trim();
+            if (!text) return;
             try {
-                const messagesRefLocal = ref(database, `messages/${currentChatId}`);
-                await push(messagesRefLocal, {
-                    type: 'text',
-                    text: text,
-                    senderId: currentUser.uid,
-                    senderUsername: currentUser.username,
-                    timestamp: Date.now()
-                });
+                const mRef = ref(database, `messages/${currentChatId}`);
+                await push(mRef, { type:'text', text, senderId: currentUser.uid, senderUsername: currentUser.username, timestamp: Date.now() });
 
-                await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), {
-                    lastMessage: text,
-                    lastMessageTime: Date.now(),
-                    unread: false
-                });
+                if (currentChatMeta.type === 'user'){
+                    await update(ref(database, `chats/${currentUser.uid}/${currentChatId}`), { lastMessage:text, lastMessageTime:Date.now(), unread:false });
+                    await update(ref(database, `chats/${currentChatId}/${currentUser.uid}`), { lastMessage:text, lastMessageTime:Date.now(), unread:true });
+                } else {
+                    // group: update chats entry for each member
+                    const gSnap = await get(ref(database, `groupChats/${currentChatId}`));
+                    const g = gSnap.exists()?gSnap.val():null;
+                    if (g && g.members){
+                        const members = Object.keys(g.members);
+                        const updates = {};
+                        members.forEach(mid=>{
+                            updates[`chats/${mid}/${currentChatId}/lastMessage`] = text;
+                            updates[`chats/${mid}/${currentChatId}/lastMessageTime`] = Date.now();
+                            updates[`chats/${mid}/${currentChatId}/unread`] = (mid === currentUser.uid) ? false : true;
+                            updates[`chats/${mid}/${currentChatId}/type`] = 'group';
+                            updates[`chats/${mid}/${currentChatId}/name`] = g.name || '그룹 채팅';
+                        });
+                        await update(ref(database, `/`), updates);
+                    }
+                }
 
-                await update(ref(database, `chats/${currentChatUser.id}/${currentUser.uid}`), {
-                    lastMessage: text,
-                    lastMessageTime: Date.now(),
-                    unread: true
-                });
-
-                messageInput.value = '';
-                messageInput.style.height = 'auto';
-            } catch (error) {
-                console.error('메시지 전송 에러:', error);
-                alert('메시지 전송에 실패했습니다: ' + error.message);
-            }
+                ta.value=''; ta.style.height='auto';
+            } catch(e){ console.error('sendMessage error', e); alert('메시지 전송 실패: '+(e.message||e)) }
         }
 
-        async function loadMessages() {
+        // messages loader & read marking
+        function loadMessages(){
             if (!currentChatId) return;
-            if (messagesRef) {
-                try { off(messagesRef); } catch (e) {}
-                messagesRef = null;
-            }
+            if (messagesRef) { try { off(messagesRef); } catch(e){} messagesRef=null; }
             messagesRef = ref(database, `messages/${currentChatId}`);
-            onValue(messagesRef, async (snapshot) => {
-                const messagesContainer = document.getElementById('messagesContainer');
-                if (!messagesContainer) return;
-                messagesContainer.innerHTML = '';
-                if (!snapshot.exists()) {
-                    messagesContainer.innerHTML = `<div class="date-divider"><span>대화 시작</span></div>`;
-                    return;
-                }
-
+            onValue(messagesRef, async (snap)=>{
+                const container = document.getElementById('messagesContainer');
+                if (!container) return;
+                container.innerHTML='';
+                if (!snap.exists()){ container.innerHTML='<div class="small" style="text-align:center;color:var(--text-secondary)">대화 시작</div>'; return; }
                 const messages = [];
-                snapshot.forEach(child => messages.push({ id: child.key, ...child.val() }));
-                messages.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
-
-                let lastDate = null;
-                for (const message of messages) {
-                    const messageDate = new Date(message.timestamp);
-                    const dateStr = messageDate.toLocaleDateString('ko-KR');
-                    if (dateStr !== lastDate) {
-                        const divider = document.createElement('div');
-                        divider.className = 'date-divider';
-                        divider.innerHTML = `<span>${dateStr}</span>`;
-                        messagesContainer.appendChild(divider);
-                        lastDate = dateStr;
+                snap.forEach(ch=>messages.push({ id:ch.key, ...ch.val() }));
+                messages.sort((a,b)=> (a.timestamp||0)-(b.timestamp||0));
+                for (const msg of messages){
+                    const isSent = msg.senderId === currentUser.uid;
+                    const wrapper = document.createElement('div'); wrapper.className='message '+(isSent?'sent':'');
+                    const avatar = document.createElement('div'); avatar.className='message-avatar'; avatar.textContent = isSent ? (currentUser.username?currentUser.username.charAt(0).toUpperCase():'U') : (currentChatMeta.type==='user' ? (currentChatMeta.data.username?currentChatMeta.data.username.charAt(0).toUpperCase():'?') : '👥');
+                    const contentWrap = document.createElement('div'); contentWrap.style.display='flex'; contentWrap.style.flexDirection='column';
+                    const bubble = document.createElement('div'); bubble.className='message-bubble';
+                    bubble.innerHTML = escapeHtml(msg.text || '');
+                    const meta = document.createElement('div'); meta.className='message-meta'; meta.textContent = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '';
+                    contentWrap.appendChild(bubble); contentWrap.appendChild(meta);
+                    if (isSent){
+                        const readEl = document.createElement('div'); readEl.className='read-indicator'; readEl.textContent = (msg.readBy && msg.readBy[currentChatMeta.type==='user'?currentChatMeta.id:currentUser.uid]) ? '읽음' : '';
+                        contentWrap.appendChild(readEl);
                     }
-
-                    const isSent = message.senderId === currentUser.uid;
-                    const timeStr = messageDate.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
-                    const initial = isSent ? (currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U') : (currentChatUser && currentChatUser.data.username ? currentChatUser.data.username.charAt(0).toUpperCase() : '?');
-
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-
-                    let bubbleContent = '';
-                    if (message.type === 'image' && message.imageUrl) {
-                        bubbleContent = `<img src="${escapeHtml(message.imageUrl)}" class="message-image" alt="${escapeHtml(message.filename || 'image')}" />`;
-                    } else {
-                        bubbleContent = escapeHtml(message.text || '');
-                    }
-
-                    let readHtml = '';
-                    if (isSent) {
-                        const readBy = message.readBy || {};
-                        const readByFriend = readBy[currentChatUser.id];
-                        readHtml = `<div class="read-indicator">${readByFriend ? '읽음' : ''}</div>`;
-                    }
-
-                    messageDiv.innerHTML = `
-                        <div class="message-avatar">${initial}</div>
-                        <div class="message-content">
-                            <div class="message-bubble">${bubbleContent}</div>
-                            <div class="message-time">${timeStr}</div>
-                            ${readHtml}
-                        </div>
-                    `;
-                    messagesContainer.appendChild(messageDiv);
+                    wrapper.appendChild(avatar); wrapper.appendChild(contentWrap);
+                    container.appendChild(wrapper);
                 }
+                container.scrollTop = container.scrollHeight;
 
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-                for (const message of messages) {
-                    if (message.senderId !== currentUser.uid) {
-                        const alreadyRead = message.readBy && message.readBy[currentUser.uid];
-                        if (!alreadyRead) {
-                            try {
-                                await set(ref(database, `messages/${currentChatId}/${message.id}/readBy/${currentUser.uid}`), true);
-                            } catch (e) { console.warn('읽음 표시 실패', e); }
+                // mark unread messages as read
+                for (const msg of messages){
+                    if (msg.senderId !== currentUser.uid){
+                        const already = msg.readBy && msg.readBy[currentUser.uid];
+                        if (!already){
+                            try{ await set(ref(database, `messages/${currentChatId}/${msg.id}/readBy/${currentUser.uid}`), true); } catch(e){ console.warn('mark read failed', e) }
                         }
                     }
                 }
-
-                try {
-                    await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), { unread: false });
-                } catch(e) {}
+                // clear chat-level unread
+                try{ await update(ref(database, `chats/${currentUser.uid}/${currentChatId}`), { unread:false }); } catch(e){}
             });
         }
 
-        function loadChatList() {
+        // load chat list (handles both user and group chats)
+        function loadChatList(){
             if (!currentUser) return;
-            if (chatsRef) {
-                try { off(chatsRef); } catch (e) {}
-                chatsRef = null;
-            }
+            if (chatsRef) { try { off(chatsRef); } catch(e){} chatsRef=null; }
             chatsRef = ref(database, `chats/${currentUser.uid}`);
-            onValue(chatsRef, async (snapshot) => {
-                const chatList = document.getElementById('chatList');
-                if (!chatList) return;
-                chatList.innerHTML = '';
-                if (!snapshot.exists()) {
-                    chatList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💬</div><h3>메시지가 없습니다</h3><p>친구에게 메시지를 보내보세요!</p></div>`;
-                    return;
-                }
+            onValue(chatsRef, async (snap)=>{
+                const container = document.getElementById('chatList'); container.innerHTML='';
+                if (!snap.exists()){ container.innerHTML=`<div class="empty-state"><div style="font-size:36px;margin-bottom:8px">💬</div><div>메시지가 없습니다</div></div>`; return; }
+                const entries = snap.val();
                 const chats = [];
-                for (const [friendId, chatData] of Object.entries(snapshot.val())) {
-                    const userSnapshot = await get(ref(database, `users/${friendId}`));
-                    if (userSnapshot.exists()) {
-                        chats.push({ friendId, friendData: userSnapshot.val(), chatData });
+                for (const [chatId, chatData] of Object.entries(entries)){
+                    if (chatData.type && chatData.type==='group'){
+                        const gSnap = await get(ref(database, `groupChats/${chatId}`));
+                        if (!gSnap.exists()) continue;
+                        chats.push({ chatId, chatData, isGroup:true, meta:gSnap.val() });
+                    } else {
+                        // treat key as user id (legacy)
+                        const uSnap = await get(ref(database, `users/${chatId}`));
+                        if (!uSnap.exists()) continue;
+                        chats.push({ chatId, chatData, isGroup:false, meta:uSnap.val() });
                     }
                 }
-                chats.sort((a,b) => (b.chatData.lastMessageTime||0) - (a.chatData.lastMessageTime||0));
-                let unreadCount = 0;
-                for (const chat of chats) {
-                    const initial = chat.friendData.username.charAt(0).toUpperCase();
-                    const time = chat.chatData.lastMessageTime ? new Date(chat.chatData.lastMessageTime).toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}) : '';
-                    if (chat.chatData.unread) unreadCount++;
-                    const chatItem = document.createElement('div');
-                    chatItem.className = 'chat-item';
-                    chatItem.innerHTML = `
-                        <div class="chat-avatar">${initial}</div>
-                        <div class="chat-info">
-                            <div class="chat-header-info">
-                                <div class="chat-name">${chat.friendData.name || '이름 없음'}</div>
-                                <div class="chat-time">${time}</div>
-                            </div>
-                            <div class="chat-preview">${chat.chatData.lastMessage || ''}</div>
-                        </div>
-                        ${chat.chatData.unread ? '<span class="unread-badge">N</span>' : ''}
-                    `;
-                    chatItem.addEventListener('click', () => {
-                        openChat(chat.friendId, chat.friendData);
-                        if (chat.chatData.unread) {
-                            update(ref(database, `chats/${currentUser.uid}/${chat.friendId}`), { unread: false });
-                        }
-                    });
-                    chatList.appendChild(chatItem);
+                chats.sort((a,b)=> (b.chatData.lastMessageTime||0) - (a.chatData.lastMessageTime||0));
+                let unreadCount=0;
+                for (const c of chats){
+                    if (c.chatData.unread) unreadCount++;
+                    const item = document.createElement('div'); item.className='chat-item';
+                    if (c.isGroup){
+                        const name = c.chatData.name || c.meta.name || '그룹 채팅';
+                        item.innerHTML = `<div class="chat-avatar">👥</div>
+                            <div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700">${escapeHtml(name)}</div><div class="small">${c.chatData.lastMessageTime?new Date(c.chatData.lastMessageTime).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):''}</div></div><div class="small" style="color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.chatData.lastMessage||''}</div></div>${c.chatData.unread?'<div style="background:var(--primary);color:#fff;padding:4px 8px;border-radius:12px;font-weight:700">N</div>':''}`;
+                        item.addEventListener('click', ()=> openChat({ type:'group', id:c.chatId, data:c.meta }));
+                    } else {
+                        const u = c.meta;
+                        const initial = u.username?u.username.charAt(0).toUpperCase():'?';
+                        item.innerHTML = `<div class="chat-avatar">${initial}</div>
+                            <div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700">${u.name||'이름 없음'}</div><div class="small">${c.chatData.lastMessageTime?new Date(c.chatData.lastMessageTime).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):''}</div></div><div class="small" style="color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.chatData.lastMessage||''}</div></div>${c.chatData.unread?'<div style="background:var(--primary);color:#fff;padding:4px 8px;border-radius:12px;font-weight:700">N</div>':''}`;
+                        item.addEventListener('click', ()=> openChat({ type:'user', id:c.chatId, data:u }));
+                    }
+                    container.appendChild(item);
                 }
                 const badge = document.getElementById('unreadBadge');
-                if (unreadCount > 0) {
-                    badge.textContent = unreadCount;
-                    badge.style.display = 'flex';
-                } else {
-                    badge.style.display = 'none';
-                }
+                if (unreadCount>0){ badge.textContent=unreadCount; badge.style.display='inline-block' } else badge.style.display='none';
             });
         }
 
-        function loadChats() { loadChatList(); }
+        function loadChats(){ loadChatList(); }
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
-            return String(text).replace(/[&<>"']/g, m => map[m]);
+        function escapeHtml(str){ if (str===null||str===undefined) return ''; return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+
+        function cleanupAllListeners(){
+            try{ if (friendsRef) off(friendsRef); }catch(e){}
+            try{ if (chatsRef) off(chatsRef); }catch(e){}
+            try{ if (messagesRef) off(messagesRef); }catch(e){}
+            try{ if (requestsRef) off(requestsRef); }catch(e){}
+            friendsRef=chatsRef=messagesRef=requestsRef=null;
         }
 
-        window.addEventListener('beforeunload', () => {
-            if (currentUser) {
-                updateUserStatus(false);
-            }
+        window.addEventListener('beforeunload', ()=>{
+            if (currentUser) update(ref(database, `users/${currentUser.uid}`), { online:false, lastSeen:Date.now() }).catch(()=>{});
             cleanupAllListeners();
         });
 
-        function cleanupAllListeners() {
-            try { if (friendsRef) off(friendsRef); } catch(e) {}
-            try { if (chatsRef) off(chatsRef); } catch(e) {}
-            try { if (messagesRef) off(messagesRef); } catch(e) {}
-            try { if (requestsRef) off(requestsRef); } catch(e) {}
-            friendsRef = chatsRef = messagesRef = requestsRef = null;
-        }
+        // UI: tabs & nav
+        document.querySelectorAll('.nav-item').forEach(btn=> btn.addEventListener('click', ()=>{
+            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); btn.classList.add('active');
+            const view = btn.dataset.view;
+            if (view==='friends'){ document.getElementById('friendsPanel').style.display='flex'; document.getElementById('messagesPanel').style.display='flex'; document.getElementById('chatArea').style.display='none' }
+            else { document.getElementById('friendsPanel').style.display='none'; document.getElementById('messagesPanel').style.display='flex'; if (currentChatId) document.getElementById('chatArea').style.display='flex' }
+        }));
 
-        // Settings modal handlers
-        const settingsModal = document.getElementById('settingsModal');
-        const openSettingsBtn = document.getElementById('openSettings');
-        const userProfileBtn = document.getElementById('userProfile');
-        const closeSettingsBtn = document.getElementById('closeSettings');
-        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        document.querySelectorAll('#friendsTabs .tab-btn').forEach(btn=> btn.addEventListener('click', ()=>{
+            document.querySelectorAll('#friendsTabs .tab-btn').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.tab;
+            document.getElementById('friendsList').style.display = tab==='friends-list' ? 'block' : 'none';
+            document.getElementById('friendRequests').style.display = tab==='requests' ? 'block' : 'none';
+            document.getElementById('addFriend').style.display = tab==='add-friend' ? 'block' : 'none';
+        }));
 
-        function openSettings() {
-            if (!currentUser) return;
-            document.getElementById('settingsName').value = currentUser.name || '';
-            document.getElementById('settingsStatus').value = currentUser.status || '';
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmNewPassword').value = '';
-            document.getElementById('settingsError').classList.remove('show');
-            document.getElementById('settingsSuccess').classList.remove('show');
-            settingsModal.classList.add('active');
-        }
-
-        function closeSettings() { settingsModal.classList.remove('active'); }
-
-        openSettingsBtn.addEventListener('click', openSettings);
-        userProfileBtn.addEventListener('click', openSettings);
-        closeSettingsBtn.addEventListener('click', closeSettings);
-
-        saveSettingsBtn.addEventListener('click', async () => {
-            if (!currentUser) return;
-            const name = document.getElementById('settingsName').value.trim();
-            const status = document.getElementById('settingsStatus').value.trim();
-            const currentPwd = document.getElementById('currentPassword').value;
-            const newPwd = document.getElementById('newPassword').value;
-            const confirmNew = document.getElementById('confirmNewPassword').value;
-            const err = document.getElementById('settingsError');
-            const ok = document.getElementById('settingsSuccess');
-            err.classList.remove('show'); ok.classList.remove('show');
-
-            try {
-                await update(ref(database, `users/${currentUser.uid}`), { name: name, status: status });
-                currentUser.name = name; currentUser.status = status;
-                localStorage.setItem('chatAppUser', JSON.stringify(currentUser));
-                loadUserData(); loadFriends();
-
-                if (newPwd || confirmNew || currentPwd) {
-                    if (!currentPwd) { err.textContent = '현재 비밀번호를 입력하세요.'; err.classList.add('show'); return; }
-                    if (newPwd.length < 6) { err.textContent = '새 비밀번호는 6자 이상이어야 합니다.'; err.classList.add('show'); return; }
-                    if (newPwd !== confirmNew) { err.textContent = '새 비밀번호와 확인값이 일치하지 않습니다.'; err.classList.add('show'); return; }
-
-                    const userSnap = await get(ref(database, `users/${currentUser.uid}`));
-                    if (!userSnap.exists()) { err.textContent = '사용자 정보를 찾을 수 없습니다.'; err.classList.add('show'); return; }
-                    const userData = userSnap.val();
-                    if (userData.password !== btoa(currentPwd)) { err.textContent = '현재 비밀번호가 올바르지 않습니다.'; err.classList.add('show'); return; }
-
-                    await update(ref(database, `users/${currentUser.uid}`), { password: btoa(newPwd) });
-                    ok.textContent = '계정 정보와 비밀번호가 업데이트되었습니다.'; ok.classList.add('show');
-                } else {
-                    ok.textContent = '계정 정보가 업데이트되었습니다.'; ok.classList.add('show');
-                }
-            } catch (error) {
-                console.error('설정 저장 에러:', error);
-                err.textContent = '설정 저장 중 오류가 발생했습니다: ' + error.message;
-                err.classList.add('show');
+        // Group creation modal logic
+        const createGroupModal = document.getElementById('createGroupModal');
+        const openCreateGroupBtn = document.getElementById('openCreateGroup');
+        const cancelCreateGroupBtn = document.getElementById('cancelCreateGroup');
+        const createGroupBtn = document.getElementById('createGroupBtn');
+        const groupMembersList = document.getElementById('groupMembersList');
+        openCreateGroupBtn.addEventListener('click', async ()=>{
+            if (!currentUser) return alert('로그인 후 사용하세요');
+            // populate friends as checkboxes
+            groupMembersList.innerHTML = '<div class="small">로딩 중...</div>';
+            const fSnap = await get(ref(database, `friends/${currentUser.uid}`));
+            const friends = fSnap.exists()?Object.keys(fSnap.val()):[];
+            groupMembersList.innerHTML = '';
+            // include self by default (hidden)
+            const selfRow = document.createElement('label'); selfRow.style.display='none';
+            selfRow.innerHTML = `<input type="checkbox" checked value="${currentUser.uid}" /> ${escapeHtml(currentUser.name||currentUser.username)}`; groupMembersList.appendChild(selfRow);
+            for (const fid of friends){
+                const uSnap = await get(ref(database, `users/${fid}`));
+                if (!uSnap.exists()) continue;
+                const u = uSnap.val();
+                const row = document.createElement('label'); row.style.display='flex'; row.style.alignItems='center'; row.style.gap='8px';
+                row.innerHTML = `<input type="checkbox" value="${fid}" /> <div style="font-weight:700">${escapeHtml(u.name||'이름 없음')}</div> <div class="small" style="color:var(--text-secondary)">@${escapeHtml(u.username||'')}</div>`;
+                groupMembersList.appendChild(row);
             }
+            createGroupModal.classList.add('active');
+        });
+        cancelCreateGroupBtn.addEventListener('click', ()=> createGroupModal.classList.remove('active'));
+        createGroupBtn.addEventListener('click', async ()=>{
+            const name = document.getElementById('groupNameInput').value.trim();
+            if (!name) return alert('그룹 이름을 입력하세요');
+            // collect checked members
+            const checked = Array.from(groupMembersList.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
+            if (!checked.includes(currentUser.uid)) checked.push(currentUser.uid);
+            if (checked.length < 2) return alert('멤버를 최소 2명 이상 선택하세요');
+            try {
+                const chatId = push(ref(database,'groupChats')).key;
+                const membersObj = {}; checked.forEach(id=>membersObj[id]=true);
+                await set(ref(database, `groupChats/${chatId}`), { name, createdBy: currentUser.uid, members: membersObj, createdAt: Date.now() });
+                // create chat entries for each member
+                const updates = {};
+                checked.forEach(mid=>{
+                    updates[`chats/${mid}/${chatId}`] = { type:'group', name, lastMessage:'', lastMessageTime: Date.now(), unread: mid===currentUser.uid?false:true };
+                });
+                await update(ref(database, `/`), updates);
+                createGroupModal.classList.remove('active');
+                alert('그룹이 생성되었습니다');
+                loadChats();
+            } catch(e){ console.error('그룹 생성 오류', e); alert('그룹 생성 실패: '+(e.message||e)) }
         });
 
-        settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) closeSettings();
-        });
+        // show/hide signup/login toggles
+        document.getElementById('showSignup').addEventListener('click', showSignup);
+        document.getElementById('backToLogin').addEventListener('click', showLogin);
 
-        document.getElementById('showSignup').addEventListener('click', () => {
-            document.getElementById('loginContainer').classList.remove('active');
-            document.getElementById('signupContainer').classList.add('active');
-        });
+        // initial loads when logged in
+        function loadFriendsInit(){ loadFriends(); }
+        function loadFriendRequestsInit(){ loadFriendRequests(); }
 
-        document.getElementById('backToLogin').addEventListener('click', () => {
-            document.getElementById('signupContainer').classList.remove('active');
-            document.getElementById('loginContainer').classList.add('active');
-        });
+        // initial chat loads
+        // called after login or initFromStorage
+        function loadChatsInit(){ loadChats(); }
 
-        // 초기 실행
-        checkLoginStatus();
+        // Run after login
+        // these functions are called earlier in login flow
     </script>
 </body>
 </html>
