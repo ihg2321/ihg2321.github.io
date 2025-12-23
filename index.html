@@ -125,7 +125,7 @@
 
         /* ==================== 로그인/회원가입 화면 ==================== */
         .auth-container {
-            display: none;
+            display: none !important;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
@@ -141,7 +141,7 @@
         }
 
         .auth-container.active {
-            display: flex;
+            display: flex !important;
         }
 
         .auth-box {
@@ -267,12 +267,12 @@
 
         /* ==================== 메인 애플리케이션 ==================== */
         .main-app {
-            display: none;
+            display: none !important;
             height: 100vh;
         }
 
         .main-app.active {
-            display: flex;
+            display: flex !important;
         }
 
         /* 사이드바 네비게이션 */
@@ -1192,6 +1192,10 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
+                // 모든 로그인 화면 숨김
+                document.querySelectorAll('.auth-container').forEach(container => {
+                    container.classList.remove('active');
+                });
                 showMainApp();
                 loadUserData();
                 loadFriends();
@@ -1204,16 +1208,25 @@
         });
 
         function showLogin() {
-            document.getElementById('loginContainer').classList.add('active');
-            document.getElementById('signupContainer').classList.remove('active');
-            document.getElementById('resetPasswordContainer').classList.remove('active');
+            // 메인 앱 숨김
             document.getElementById('mainApp').classList.remove('active');
+            
+            // 모든 인증 화면 숨김
+            document.querySelectorAll('.auth-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            // 로그인 화면만 표시
+            document.getElementById('loginContainer').classList.add('active');
         }
 
         function showMainApp() {
-            document.getElementById('loginContainer').classList.remove('active');
-            document.getElementById('signupContainer').classList.remove('active');
-            document.getElementById('resetPasswordContainer').classList.remove('active');
+            // 모든 인증 화면 숨김
+            document.querySelectorAll('.auth-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            // 메인 앱만 표시
             document.getElementById('mainApp').classList.add('active');
         }
 
