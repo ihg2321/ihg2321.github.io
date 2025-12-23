@@ -132,6 +132,12 @@
             padding: 20px;
             background: radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
                         radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
         }
 
         .auth-container.active {
@@ -1292,7 +1298,6 @@
             
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged가 자동으로 처리
             } catch (error) {
                 console.error('로그인 에러:', error);
                 let errorMessage = '로그인 중 오류가 발생했습니다.';
@@ -1338,7 +1343,6 @@
                 
                 document.getElementById('resetEmail').value = '';
                 
-                // 3초 후 로그인 화면으로
                 setTimeout(() => {
                     document.getElementById('resetPasswordContainer').classList.remove('active');
                     document.getElementById('loginContainer').classList.add('active');
@@ -1429,7 +1433,6 @@
             addBtn.innerHTML = '<span class="spinner"></span> 추가 중...';
             
             try {
-                // 이메일로 사용자 검색
                 const usersRef = ref(database, 'users');
                 const emailQuery = query(usersRef, orderByChild('email'), equalTo(email));
                 const snapshot = await get(emailQuery);
@@ -1445,7 +1448,6 @@
                     friendId = childSnapshot.key;
                 });
                 
-                // 이미 친구인지 확인
                 const friendCheckRef = ref(database, `friends/${currentUser.uid}/${friendId}`);
                 const friendCheck = await get(friendCheckRef);
                 
@@ -1455,7 +1457,6 @@
                     return;
                 }
                 
-                // 양방향 친구 관계 추가
                 await set(ref(database, `friends/${currentUser.uid}/${friendId}`), {
                     addedAt: Date.now()
                 });
@@ -1469,7 +1470,6 @@
                 document.getElementById('friendEmail').value = '';
                 loadFriends();
                 
-                // 친구 목록 탭으로 전환
                 setTimeout(() => {
                     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
                     document.querySelector('[data-tab="friends-list"]').classList.add('active');
@@ -1536,22 +1536,16 @@
             });
         }
 
-        // ==================== 채팅 열기 (수정됨) ====================
+        // ==================== 채팅 열기 ====================
         function openChat(friendId, friendData) {
-            // 같은 채팅방을 다시 열면 스크롤 위치 유지
             if (currentChatId && currentChatUser && currentChatUser.id === friendId) {
                 return;
             }
             
             currentChatUser = { id: friendId, data: friendData };
-            
-            // 채팅방 ID 생성 (작은 UID가 앞에 오도록)
             currentChatId = [currentUser.uid, friendId].sort().join('_');
-            
-            // 메시지 입력 설정 플래그 리셋
             messageInputSetup = false;
             
-            // 메시지 탭으로 전환
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
             document.querySelector('[data-view="messages"]').classList.add('active');
             
@@ -1559,12 +1553,10 @@
             document.getElementById('messagesPanel').classList.add('active');
             document.getElementById('chatArea').classList.add('active');
             
-            // 기존 채팅 UI가 이미 있으면 재사용
             const existingChatHeader = document.querySelector('.chat-header');
             const existingMessagesContainer = document.getElementById('messagesContainer');
             
             if (existingChatHeader && existingMessagesContainer) {
-                // 헤더만 업데이트
                 const initial = friendData.name ? friendData.name.charAt(0) : '?';
                 const onlineStatus = friendData.online ? '온라인' : '오프라인';
                 const statusColor = friendData.online ? 'var(--success)' : 'var(--text-secondary)';
@@ -1577,14 +1569,12 @@
                 `;
                 document.querySelector('.chat-header-status').style.color = statusColor;
                 
-                // 메시지는 유지 (loadMessages에서 처리)
                 setupMessageInput();
                 loadMessages();
                 loadChatList();
                 return;
             }
             
-            // 새 채팅 UI 생성
             const initial = friendData.name ? friendData.name.charAt(0) : '?';
             const onlineStatus = friendData.online ? '온라인' : '오프라인';
             const statusColor = friendData.online ? 'var(--success)' : 'var(--text-secondary)';
@@ -1635,10 +1625,7 @@
             const messageInput = document.getElementById('messageInput');
             const sendBtn = document.getElementById('sendBtn');
             
-            if (!messageInput || !sendBtn) return;
-            
-            // 이미 설정되었으면 리턴 (중복 방지)
-            if (messageInputSetup) return;
+            if (!messageInput || !sendBtn || messageInputSetup) return;
             messageInputSetup = true;
             
             messageInput.addEventListener('input', function() {
@@ -1672,7 +1659,6 @@
                     timestamp: Date.now()
                 });
                 
-                // 최근 메시지 업데이트
                 await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), {
                     lastMessage: text,
                     lastMessageTime: Date.now(),
@@ -1693,11 +1679,10 @@
             }
         }
 
-        // ==================== 메시지 로드 (수정됨 - 스크롤 위치 유지) ====================
+        // ==================== 메시지 로드 ====================
         function loadMessages() {
             if (!currentChatId) return;
             
-            // 기존 리스너 제거 (중복 방지)
             if (messagesListener) {
                 off(ref(database, `messages/${currentChatId}`));
             }
@@ -1705,18 +1690,11 @@
             const messagesContainer = document.getElementById('messagesContainer');
             if (!messagesContainer) return;
             
-            // 현재 스크롤 위치와 메시지 개수 저장
-            const previousScrollHeight = messagesContainer.scrollHeight;
-            const previousScrollTop = messagesContainer.scrollTop;
-            const previousMessageCount = messagesContainer.querySelectorAll('.message').length;
-            
             const messagesRef = ref(database, `messages/${currentChatId}`);
             messagesListener = onValue(messagesRef, async (snapshot) => {
-                // 현재 스크롤 위치 저장
-                const currentScrollTop = messagesContainer.scrollTop;
-                const currentScrollHeight = messagesContainer.scrollHeight;
-                const isScrolledUp = currentScrollTop < currentScrollHeight - messagesContainer.clientHeight - 100;
-                const isAtBottom = currentScrollHeight - currentScrollTop <= messagesContainer.clientHeight + 100;
+                const previousScrollHeight = messagesContainer.scrollHeight;
+                const previousScrollTop = messagesContainer.scrollTop;
+                const isAtBottom = previousScrollHeight - previousScrollTop <= messagesContainer.clientHeight + 100;
                 
                 messagesContainer.innerHTML = '';
                 
@@ -1739,28 +1717,9 @@
                 
                 messages.sort((a, b) => a.timestamp - b.timestamp);
                 
-                // 읽지 않은 메시지 찾기
-                const lastReadTimestamp = await getLastReadTimestamp();
-                let unreadMessageElement = null;
-                let hasUnreadMarker = false;
-                let firstUnreadMessageIndex = -1;
-                
-                for (let i = 0; i < messages.length; i++) {
-                    const message = messages[i];
+                for (const message of messages) {
                     const messageDate = new Date(message.timestamp);
                     const dateStr = messageDate.toLocaleDateString('ko-KR');
-                    
-                    // 읽지 않은 메시지 구분선 추가 (한 번만)
-                    if (!hasUnreadMarker && message.senderId !== currentUser.uid && message.timestamp > lastReadTimestamp) {
-                        firstUnreadMessageIndex = i;
-                        const unreadDivider = document.createElement('div');
-                        unreadDivider.className = 'date-divider';
-                        unreadDivider.style.color = 'var(--error)';
-                        unreadDivider.innerHTML = `<span style="background: var(--bg-main); color: var(--error); border: 1px solid var(--error);">읽지 않은 메시지</span>`;
-                        messagesContainer.appendChild(unreadDivider);
-                        unreadMessageElement = unreadDivider;
-                        hasUnreadMarker = true;
-                    }
                     
                     if (dateStr !== lastDate) {
                         const divider = document.createElement('div');
@@ -1787,8 +1746,6 @@
                     
                     const messageDiv = document.createElement('div');
                     messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-                    messageDiv.dataset.messageId = message.id;
-                    messageDiv.dataset.timestamp = message.timestamp;
                     messageDiv.innerHTML = `
                         <div class="message-avatar">${initial}</div>
                         <div class="message-content">
@@ -1800,72 +1757,18 @@
                     messagesContainer.appendChild(messageDiv);
                 }
                 
-                // 스크롤 위치 설정
                 setTimeout(() => {
-                    const newScrollHeight = messagesContainer.scrollHeight;
-                    
-                    if (isScrolledUp) {
-                        // 사용자가 위로 스크롤한 상태라면 기존 위치 유지
-                        const scrollDifference = newScrollHeight - previousScrollHeight;
-                        messagesContainer.scrollTop = previousScrollTop + scrollDifference;
-                    } 
-                    else if (unreadMessageElement && firstUnreadMessageIndex >= 0) {
-                        // 읽지 않은 메시지가 있으면 첫 번째 읽지 않은 메시지로 스크롤
-                        const unreadMessages = messagesContainer.querySelectorAll('.message');
-                        if (unreadMessages.length > 0 && firstUnreadMessageIndex < unreadMessages.length) {
-                            const targetIndex = Math.min(firstUnreadMessageIndex, unreadMessages.length - 1);
-                            unreadMessages[targetIndex].scrollIntoView({ 
-                                behavior: 'smooth', 
-                                block: 'start' 
-                            });
-                        }
-                        
-                        // 마지막 읽은 시간 업데이트
-                        saveLastReadTimestamp(Date.now());
-                    }
-                    else if (isAtBottom || messages.length === 0) {
-                        // 맨 아래에 있었거나 새 채팅이면 맨 아래로
+                    if (isAtBottom || messages.length === 0) {
                         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    }
-                    else {
-                        // 기본적으로 현재 위치 유지
-                        messagesContainer.scrollTop = currentScrollTop;
                     }
                 }, 100);
             });
-        }
-        
-        // 마지막으로 읽은 타임스탬프 가져오기
-        async function getLastReadTimestamp() {
-            if (!currentChatId || !currentUser) return 0;
-            
-            try {
-                const snapshot = await get(ref(database, `lastRead/${currentUser.uid}/${currentChatId}`));
-                return snapshot.exists() ? snapshot.val().timestamp : 0;
-            } catch (error) {
-                console.error('마지막 읽은 시간 가져오기 에러:', error);
-                return 0;
-            }
-        }
-        
-        // 마지막으로 읽은 타임스탬프 저장
-        async function saveLastReadTimestamp(timestamp) {
-            if (!currentChatId || !currentUser) return;
-            
-            try {
-                await set(ref(database, `lastRead/${currentUser.uid}/${currentChatId}`), {
-                    timestamp: timestamp
-                });
-            } catch (error) {
-                console.error('마지막 읽은 시간 저장 에러:', error);
-            }
         }
 
         // ==================== 채팅 목록 로드 ====================
         function loadChatList() {
             if (!currentUser) return;
             
-            // 기존 리스너 제거 (중복 방지)
             if (chatListListener) {
                 off(ref(database, `chats/${currentUser.uid}`));
             }
@@ -1933,7 +1836,6 @@
                     chatItem.addEventListener('click', () => {
                         openChat(chat.friendId, chat.friendData);
                         
-                        // 읽음 처리
                         if (chat.chatData.unread) {
                             update(ref(database, `chats/${currentUser.uid}/${chat.friendId}`), {
                                 unread: false
@@ -1944,7 +1846,6 @@
                     chatList.appendChild(chatItem);
                 }
                 
-                // 읽지 않은 메시지 배지 업데이트
                 const badge = document.getElementById('unreadBadge');
                 if (unreadCount > 0) {
                     badge.textContent = unreadCount;
@@ -1959,7 +1860,6 @@
             loadChatList();
         }
 
-        // HTML 이스케이프
         function escapeHtml(text) {
             const map = {
                 '&': '&amp;',
