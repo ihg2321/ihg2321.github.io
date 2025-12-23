@@ -1551,23 +1551,25 @@
             
             document.getElementById('friendsPanel').classList.remove('active');
             document.getElementById('messagesPanel').classList.add('active');
-            document.getElementById('chatArea').classList.add('active');
             
-            const existingChatHeader = document.querySelector('.chat-header');
-            const existingMessagesContainer = document.getElementById('messagesContainer');
+            const chatArea = document.getElementById('chatArea');
+            chatArea.classList.add('active');
+            
+            const existingChatHeader = chatArea.querySelector('.chat-header');
+            const existingMessagesContainer = chatArea.querySelector('#messagesContainer');
             
             if (existingChatHeader && existingMessagesContainer) {
                 const initial = friendData.name ? friendData.name.charAt(0) : '?';
                 const onlineStatus = friendData.online ? '온라인' : '오프라인';
                 const statusColor = friendData.online ? 'var(--success)' : 'var(--text-secondary)';
                 
-                document.querySelector('.chat-header-avatar').textContent = initial;
-                document.querySelector('.chat-header-details h3').textContent = friendData.name || '이름 없음';
-                document.querySelector('.chat-header-status').innerHTML = `
+                chatArea.querySelector('.chat-header-avatar').textContent = initial;
+                chatArea.querySelector('.chat-header-details h3').textContent = friendData.name || '이름 없음';
+                chatArea.querySelector('.chat-header-status').innerHTML = `
                     ${friendData.online ? '<span class="status-dot"></span>' : ''}
                     ${onlineStatus}
                 `;
-                document.querySelector('.chat-header-status').style.color = statusColor;
+                chatArea.querySelector('.chat-header-status').style.color = statusColor;
                 
                 setupMessageInput();
                 loadMessages();
@@ -1579,7 +1581,7 @@
             const onlineStatus = friendData.online ? '온라인' : '오프라인';
             const statusColor = friendData.online ? 'var(--success)' : 'var(--text-secondary)';
             
-            document.getElementById('chatArea').innerHTML = `
+            chatArea.innerHTML = `
                 <div class="chat-header">
                     <div class="chat-header-left">
                         <div class="chat-header-avatar">${initial}</div>
