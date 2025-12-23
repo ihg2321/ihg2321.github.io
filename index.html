@@ -961,8 +961,8 @@
             
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="loginUsername">아이디</label>
-                    <input type="text" id="loginUsername" placeholder="아이디를 입력하세요" required>
+                    <label for="loginUsername">아이디 또는 이메일</label>
+                    <input type="text" id="loginUsername" placeholder="아이디 또는 이메일을 입력하세요" required>
                 </div>
                 
                 <div class="form-group">
@@ -999,6 +999,12 @@
                     <label for="signupUsername">아이디</label>
                     <input type="text" id="signupUsername" placeholder="영문, 숫자 4-20자" required minlength="4" maxlength="20" pattern="[a-zA-Z0-9]+">
                     <div class="input-hint">영문과 숫자만 사용 가능합니다</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="signupEmail">이메일</label>
+                    <input type="email" id="signupEmail" placeholder="email@example.com" required>
+                    <div class="input-hint">유효한 이메일을 입력하세요</div>
                 </div>
                 
                 <div class="form-group">
@@ -1119,7 +1125,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, get, update, query, orderByChild, equalTo, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, get, update, query, orderByChild, equalTo, child, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // Firebase 설정
         const firebaseConfig = {
@@ -1140,6 +1146,11 @@
         let currentUser = null;
         let currentChatId = null;
         let currentChatUser = null;
+
+        // 리스너 참조(중복 등록 방지/해제용)
+        let friendsRef = null;
+        let chatsRef = null;
+        let messagesRef = null;
 
         // ==================== 로컬 스토리지에서 사용자 정보 확인 ====================
         function checkLoginStatus() {
@@ -1173,6 +1184,7 @@
             e.preventDefault();
             
             const username = document.getElementById('signupUsername').value.trim().toLowerCase();
+            const email = document.getElementById('signupEmail').value.trim().toLowerCase();
             const name = document.getElementById('signupName').value.trim();
             const password = document.getElementById('signupPassword').value;
             const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
@@ -1195,6 +1207,14 @@
                 errorDiv.classList.add('show');
                 return;
             }
+
+            // 이메일 기본 체크
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                errorDiv.textContent = '유효한 이메일을 입력하세요.';
+                errorDiv.classList.add('show');
+                return;
+            }
             
             if (password !== passwordConfirm) {
                 errorDiv.textContent = '비밀번호가 일치하지 않습니다.';
@@ -1214,9 +1234,16 @@
             try {
                 // 아이디 중복 확인
                 const userSnapshot = await get(ref(database, `usernames/${username}`));
-                
                 if (userSnapshot.exists()) {
                     errorDiv.textContent = '이미 사용 중인 아이디입니다.';
+                    errorDiv.classList.add('show');
+                    return;
+                }
+
+                // 이메일 중복 확인
+                const emailSnapshot = await get(ref(database, `emails/${email}`));
+                if (emailSnapshot.exists()) {
+                    errorDiv.textContent = '이미 사용 중인 이메일입니다.';
                     errorDiv.classList.add('show');
                     return;
                 }
@@ -1230,6 +1257,7 @@
                 // 사용자 정보 저장
                 await set(ref(database, `users/${userId}`), {
                     username: username,
+                    email: email,
                     name: name,
                     password: hashedPassword,
                     status: '안녕하세요!',
@@ -1239,6 +1267,9 @@
                 
                 // 아이디-유저ID 매핑 저장
                 await set(ref(database, `usernames/${username}`), userId);
+
+                // 이메일-유저ID 매핑 저장
+                await set(ref(database, `emails/${email}`), userId);
                 
                 successDiv.textContent = '회원가입이 완료되었습니다! 로그인해주세요.';
                 successDiv.classList.add('show');
@@ -1246,7 +1277,7 @@
                 // 폼 초기화
                 document.getElementById('signupForm').reset();
                 
-                // 3초 후 로그인 화면으로
+                // 2초 후 로그인 화면으로
                 setTimeout(() => {
                     document.getElementById('signupContainer').classList.remove('active');
                     document.getElementById('loginContainer').classList.add('active');
@@ -1266,7 +1297,7 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+            const identifier = document.getElementById('loginUsername').value.trim().toLowerCase();
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
             const loginBtn = document.getElementById('loginBtn');
@@ -1276,16 +1307,24 @@
             loginBtn.innerHTML = '<span class="spinner"></span> 로그인 중...';
             
             try {
-                // 아이디로 유저 ID 찾기
-                const usernameSnapshot = await get(ref(database, `usernames/${username}`));
-                
-                if (!usernameSnapshot.exists()) {
-                    errorDiv.textContent = '존재하지 않는 아이디입니다.';
+                // identifier를 username 또는 email로 판단하지 말고, 매핑에서 먼저 찾아본다
+                let userId = null;
+
+                const usernameSnapshot = await get(ref(database, `usernames/${identifier}`));
+                if (usernameSnapshot.exists()) {
+                    userId = usernameSnapshot.val();
+                } else {
+                    const emailSnapshot = await get(ref(database, `emails/${identifier}`));
+                    if (emailSnapshot.exists()) {
+                        userId = emailSnapshot.val();
+                    }
+                }
+
+                if (!userId) {
+                    errorDiv.textContent = '존재하지 않는 아이디 또는 이메일입니다.';
                     errorDiv.classList.add('show');
                     return;
                 }
-                
-                const userId = usernameSnapshot.val();
                 
                 // 사용자 정보 가져오기
                 const userSnapshot = await get(ref(database, `users/${userId}`));
@@ -1310,6 +1349,7 @@
                     uid: userId,
                     username: userData.username,
                     name: userData.name,
+                    email: userData.email || '',
                     status: userData.status
                 };
                 
@@ -1340,6 +1380,9 @@
             if (confirm('로그아웃 하시겠습니까?')) {
                 try {
                     await updateUserStatus(false);
+                    // 리스너 정리
+                    cleanupAllListeners();
+
                     localStorage.removeItem('chatAppUser');
                     currentUser = null;
                     showLogin();
@@ -1353,7 +1396,7 @@
         // ==================== 사용자 데이터 로드 ====================
         function loadUserData() {
             if (!currentUser) return;
-            document.getElementById('userProfile').textContent = currentUser.username;
+            document.getElementById('userProfile').textContent = currentUser.username || currentUser.email || 'User';
         }
 
         // ==================== 온라인 상태 업데이트 ====================
@@ -1454,8 +1497,13 @@
         // ==================== 친구 목록 로드 ====================
         function loadFriends() {
             if (!currentUser) return;
-            
-            const friendsRef = ref(database, `friends/${currentUser.uid}`);
+
+            // 기존 리스너 해제 (중복 등록 방지)
+            if (friendsRef) {
+                try { off(friendsRef); } catch (e) { /* ignore */ }
+            }
+
+            friendsRef = ref(database, `friends/${currentUser.uid}`);
             onValue(friendsRef, async (snapshot) => {
                 const friendsList = document.getElementById('friendsList');
                 friendsList.innerHTML = '';
@@ -1507,6 +1555,12 @@
             
             // 채팅방 ID 생성 (작은 UID가 앞에 오도록)
             currentChatId = [currentUser.uid, friendId].sort().join('_');
+
+            // 기존 messages 리스너 제거 (중복 리스너 방지)
+            if (messagesRef) {
+                try { off(messagesRef); } catch (e) { /* ignore */ }
+                messagesRef = null;
+            }
             
             // 메시지 탭으로 전환
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -1593,8 +1647,8 @@
             if (text === '') return;
             
             try {
-                const messagesRef = ref(database, `messages/${currentChatId}`);
-                await push(messagesRef, {
+                const messagesRefLocal = ref(database, `messages/${currentChatId}`);
+                await push(messagesRefLocal, {
                     text: text,
                     senderId: currentUser.uid,
                     senderUsername: currentUser.username,
@@ -1625,8 +1679,13 @@
         // ==================== 메시지 로드 ====================
         function loadMessages() {
             if (!currentChatId) return;
-            
-            const messagesRef = ref(database, `messages/${currentChatId}`);
+
+            // 기존 messages 리스너 해제
+            if (messagesRef) {
+                try { off(messagesRef); } catch (e) { /* ignore */ }
+            }
+
+            messagesRef = ref(database, `messages/${currentChatId}`);
             onValue(messagesRef, async (snapshot) => {
                 const messagesContainer = document.getElementById('messagesContainer');
                 if (!messagesContainer) return;
@@ -1697,8 +1756,13 @@
         // ==================== 채팅 목록 로드 ====================
         function loadChatList() {
             if (!currentUser) return;
-            
-            const chatsRef = ref(database, `chats/${currentUser.uid}`);
+
+            // 기존 chats 리스너 해제
+            if (chatsRef) {
+                try { off(chatsRef); } catch (e) { /* ignore */ }
+            }
+
+            chatsRef = ref(database, `chats/${currentUser.uid}`);
             onValue(chatsRef, async (snapshot) => {
                 const chatList = document.getElementById('chatList');
                 if (!chatList) return;
@@ -1728,16 +1792,16 @@
                     }
                 }
                 
-                chats.sort((a, b) => b.chatData.lastMessageTime - a.chatData.lastMessageTime);
+                chats.sort((a, b) => (b.chatData.lastMessageTime || 0) - (a.chatData.lastMessageTime || 0));
                 
                 let unreadCount = 0;
                 
                 for (const chat of chats) {
                     const initial = chat.friendData.username.charAt(0).toUpperCase();
-                    const time = new Date(chat.chatData.lastMessageTime).toLocaleTimeString('ko-KR', {
+                    const time = chat.chatData.lastMessageTime ? new Date(chat.chatData.lastMessageTime).toLocaleTimeString('ko-KR', {
                         hour: '2-digit',
                         minute: '2-digit'
-                    });
+                    }) : '';
                     
                     if (chat.chatData.unread) unreadCount++;
                     
@@ -1847,12 +1911,23 @@
             });
         });
 
-        // 페이지 종료 시 오프라인 처리
+        // 페이지 종료 시 오프라인 처리 및 리스너 정리
         window.addEventListener('beforeunload', () => {
             if (currentUser) {
                 updateUserStatus(false);
             }
+            cleanupAllListeners();
         });
+
+        // 전체 리스너 정리 함수
+        function cleanupAllListeners() {
+            try { if (friendsRef) off(friendsRef); } catch(e) {}
+            try { if (chatsRef) off(chatsRef); } catch(e) {}
+            try { if (messagesRef) off(messagesRef); } catch(e) {}
+            friendsRef = null;
+            chatsRef = null;
+            messagesRef = null;
+        }
 
         // 페이지 로드 시 로그인 상태 확인
         checkLoginStatus();
