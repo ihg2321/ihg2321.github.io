@@ -679,6 +679,7 @@
             font-size: 16px;
             font-weight: 600;
             margin-bottom: 4px;
+            cursor: pointer;
         }
 
         .chat-header-status {
@@ -916,6 +917,7 @@
         }
 
         /* emoji panel */
+        /* show 5 emojis per page (1 row of 5) */
         .emoji-panel {
             position: absolute;
             bottom: 96px;
@@ -1006,7 +1008,7 @@
             color: white;
         }
 
-        /* 설정 모달 */
+        /* 설정/모달 공통 */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -1041,6 +1043,13 @@
         /* 그룹 생성 체크박스 리스트 */
         .member-list { max-height:200px; overflow:auto; border:1px solid var(--border); padding:8px; border-radius:8px; background:var(--bg-main); }
         .member-item { display:flex; align-items:center; gap:8px; padding:6px; border-radius:6px; }
+
+        /* 그룹 정보 modal specifics */
+        .group-members { max-height:240px; overflow:auto; border:1px solid var(--border); padding:8px; border-radius:8px; background:var(--bg-main); }
+        .group-member { display:flex; align-items:center; justify-content:space-between; padding:8px; border-radius:6px; }
+        .group-member .info { display:flex; gap:8px; align-items:center; }
+        .group-member .avatar { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;font-weight:700; }
+        .group-invite-list { max-height:160px; overflow:auto; border:1px dashed var(--border); padding:8px; border-radius:8px; background:var(--bg-main); margin-top:8px; }
     </style>
 </head>
 <body>
@@ -1286,6 +1295,31 @@
             <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
                 <button class="btn btn-secondary" id="cancelGroupBtn">취소</button>
                 <button class="btn btn-primary" id="confirmCreateGroup">생성</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 그룹 정보(멤버/초대/제거) 모달 -->
+    <div class="modal-backdrop" id="groupInfoModal">
+        <div class="modal">
+            <h3 id="groupInfoTitle">그룹 정보</h3>
+            <div class="error-message" id="groupInfoError"></div>
+            <div style="margin-bottom:8px;">
+                <strong>멤버</strong>
+            </div>
+            <div class="group-members" id="groupMembersList">
+                <!-- 멤버 리스트 -->
+            </div>
+
+            <div style="margin-top:12px;">
+                <strong>초대할 친구</strong>
+                <div class="group-invite-list" id="groupInviteList">
+                    <!-- 초대 가능한 친구들 (현재 사용자의 친구 중 그룹에 없는 사용자) -->
+                </div>
+            </div>
+
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+                <button class="btn btn-secondary" id="closeGroupInfo">닫기</button>
             </div>
         </div>
     </div>
@@ -1717,6 +1751,8 @@
                             <p>친구를 추가해보세요!</p>
                         </div>
                     `;
+                    // also refresh group invite lists if modal open
+                    renderGroupMemberList();
                     return;
                 }
                 
@@ -1750,6 +1786,7 @@
 
                 // 또한 그룹 멤버 선택 목록이 열려있다면 갱신
                 renderGroupMemberList();
+                renderGroupInviteCandidates(); // if group info modal open
             });
         }
 
@@ -1897,7 +1934,7 @@
                     <div class="chat-header-left">
                         <div class="chat-header-avatar">${initials}</div>
                         <div class="chat-header-details">
-                            <h3>${g.name || '그룹 채팅'}</h3>
+                            <h3 id="groupNameHeader">${g.name || '그룹 채팅'}</h3>
                             <div class="chat-header-status" style="color: var(--text-secondary)">
                                 멤버 ${g.members ? Object.keys(g.members).length : 0}명
                             </div>
@@ -1953,10 +1990,16 @@
             
             // 버튼 바인딩 (group info)
             if (currentChatUser.isGroup) {
+                const groupId = currentChatId.split('group_')[1];
                 const groupInfoBtn = document.getElementById('groupInfoBtn');
                 groupInfoBtn?.addEventListener('click', async () => {
-                    const gp = currentChatUser.data;
-                    alert(`그룹명: ${gp.name}\n멤버: ${Object.values(gp.members || {}).map(m=>m.name||m.username||m.uid).join(', ')}`);
+                    openGroupInfo(groupId);
+                });
+
+                // clicking group name header opens group info
+                const groupNameHeader = document.getElementById('groupNameHeader');
+                groupNameHeader?.addEventListener('click', () => {
+                    openGroupInfo(groupId);
                 });
             }
 
@@ -2088,8 +2131,8 @@
             }
         }
 
-        // ==================== 이모지 시스템(페이징 5x5) ====================
-        // EMOJIS: 널리 쓰이는 이모지들을 모아둠. 사용자가 "모든 이모티콘"을 원하면 페이지네이션으로 전체 탐색 가능.
+        // ==================== 이모지 시스템(페이징 5개씩) ====================
+        // EMOJIS: 널리 쓰이는 이모지들을 모아둠. 페이지당 5개씩 표시 (사용자가 '다음'/'이전'으로 전체 탐색)
         const EMOJIS = [
             "😀","😁","😂","🤣","😃","😄","😅","😆","😉","😊","🙂","🙃","😋","😎","😍","😘","😗","😙","😚","😇",
             "🤩","🤗","🤔","🤨","😐","😑","😶","😏","😣","😥","😮","🤐","😯","😪","😫","😴","😌","😛","😜","😝",
@@ -2111,9 +2154,9 @@
             "🍣","🍱","🍛","🍤","🍙","🍚","🍘","🍥","🥠","🍢","🍡","🍧","🍨","🍦","🍰","🎂","🍮","🍩","🍪","🌰"
         ];
 
-        // Pagination state
+        // Pagination state: now show 5 emojis per page as requested
         let emojiPage = 0;
-        const EMOJIS_PER_PAGE = 25;
+        const EMOJIS_PER_PAGE = 5;
         let emojiFiltered = EMOJIS.slice();
 
         function renderEmojiPage() {
@@ -2161,12 +2204,9 @@
             if (!q) {
                 emojiFiltered = EMOJIS.slice();
             } else {
-                // simple filtering: if input is a short name, try map; otherwise also allow searching by actual emoji char
                 emojiFiltered = EMOJIS.filter(em => {
                     return em.includes(q) || em === q;
                 });
-                // If no match by direct char, attempt fuzzy mapping (basic keywords)
-                // NOTE: For extensive keyword map, you'd supply mapping; here we do simple checks for common keywords:
                 if (emojiFiltered.length === 0) {
                     const keywordMap = {
                         heart: ['❤️','💖','💗','💓','💕','💝'],
@@ -2694,6 +2734,184 @@
             }
         });
 
+        // ==================== 그룹 정보 보기/관리 ====================
+        const groupInfoModal = document.getElementById('groupInfoModal');
+        const groupMembersList = document.getElementById('groupMembersList');
+        const groupInviteList = document.getElementById('groupInviteList');
+        const groupInfoTitle = document.getElementById('groupInfoTitle');
+        const closeGroupInfoBtn = document.getElementById('closeGroupInfo');
+        const groupInfoError = document.getElementById('groupInfoError');
+
+        closeGroupInfoBtn.addEventListener('click', () => {
+            groupInfoModal.classList.remove('active');
+        });
+
+        async function openGroupInfo(groupId) {
+            groupInfoError.classList.remove('show');
+            groupMembersList.innerHTML = '<div style="color:var(--text-secondary)">불러오는 중...</div>';
+            groupInviteList.innerHTML = '<div style="color:var(--text-secondary)">불러오는 중...</div>';
+            try {
+                const gSnap = await get(ref(database, `groups/${groupId}`));
+                if (!gSnap.exists()) {
+                    alert('그룹 정보를 찾을 수 없습니다.');
+                    return;
+                }
+                const g = gSnap.val();
+                groupInfoTitle.textContent = `그룹: ${g.name || '이름 없음'}`;
+                // render members
+                const members = g.members || {};
+                groupMembersList.innerHTML = '';
+                const isCreator = g.creator === currentUser.uid;
+                for (const uid of Object.keys(members)) {
+                    const uSnap = await get(ref(database, `users/${uid}`));
+                    const u = uSnap.exists() ? uSnap.val() : (members[uid] || { username: uid, name: uid });
+                    const div = document.createElement('div');
+                    div.className = 'group-member';
+                    div.innerHTML = `
+                        <div class="info">
+                            <div class="avatar">${u.username ? u.username.charAt(0).toUpperCase() : 'U'}</div>
+                            <div>
+                                <div style="font-weight:700">${u.name || u.username || uid}</div>
+                                <div style="font-size:12px;color:var(--text-secondary)">@${u.username || uid}</div>
+                            </div>
+                        </div>
+                        <div>
+                            ${g.creator === uid ? '<span style="font-size:12px;color:var(--text-secondary);margin-right:8px;">관리자</span>' : ''}
+                            ${ (isCreator && uid !== currentUser.uid) ? `<button class="btn btn-secondary btn-remove" data-uid="${uid}">추방</button>` : '' }
+                        </div>
+                    `;
+                    groupMembersList.appendChild(div);
+                }
+
+                // bind remove buttons
+                groupMembersList.querySelectorAll('.btn-remove').forEach(btn => {
+                    btn.addEventListener('click', async (ev) => {
+                        const targetUid = btn.dataset.uid;
+                        if (!confirm('정말로 멤버를 추방하시겠습니까?')) return;
+                        try {
+                            // remove member from group
+                            await set(ref(database, `groups/${groupId}/members/${targetUid}`), null);
+                            // remove chat entry for that member
+                            await set(ref(database, `chats/${targetUid}/group_${groupId}`), null);
+                            // push system message
+                            const mRef = push(ref(database, `messages/group_${groupId}`));
+                            await set(mRef, {
+                                type: 'system',
+                                text: `${targetUid}님이 그룹에서 추방되었습니다.`,
+                                timestamp: Date.now(),
+                                senderId: currentUser.uid
+                            });
+                            // refresh UI
+                            openGroupInfo(groupId);
+                            if (currentChatId === `group_${groupId}`) {
+                                // reload current group data
+                                const g2 = (await get(ref(database, `groups/${groupId}`))).val();
+                                currentChatUser.data = g2;
+                                // update chat header member count
+                                const headerStatus = document.querySelector('.chat-header-status');
+                                if (headerStatus) headerStatus.textContent = `멤버 ${g2.members ? Object.keys(g2.members).length : 0}명`;
+                            }
+                        } catch (err) {
+                            console.error('멤버 추방 오류', err);
+                            groupInfoError.textContent = '추방 실패: ' + err.message;
+                            groupInfoError.classList.add('show');
+                        }
+                    });
+                });
+
+                // render invite candidates (friends who are not members)
+                await renderGroupInviteCandidates(groupId);
+
+                groupInfoModal.classList.add('active');
+            } catch (e) {
+                console.error('그룹 정보 로드 오류', e);
+                alert('그룹 정보를 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 친구 목록 중에서 그룹에 속하지 않은 사용자 목록을 보여준다
+        async function renderGroupInviteCandidates(groupId) {
+            groupInviteList.innerHTML = '<div style="color:var(--text-secondary)">불러오는 중...</div>';
+            try {
+                const friendsSnap = await get(ref(database, `friends/${currentUser.uid}`));
+                const gSnap = await get(ref(database, `groups/${groupId}`));
+                if (!friendsSnap.exists()) {
+                    groupInviteList.innerHTML = '<div style="color:var(--text-secondary)">초대할 친구가 없습니다</div>';
+                    return;
+                }
+                const friends = Object.keys(friendsSnap.val());
+                const members = gSnap.exists() ? (gSnap.val().members || {}) : {};
+                const candidates = friends.filter(f => !members[f]);
+                if (candidates.length === 0) {
+                    groupInviteList.innerHTML = '<div style="color:var(--text-secondary)">초대할 친구가 없습니다</div>';
+                    return;
+                }
+                groupInviteList.innerHTML = '';
+                for (const fid of candidates) {
+                    const uSnap = await get(ref(database, `users/${fid}`));
+                    if (!uSnap.exists()) continue;
+                    const u = uSnap.val();
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.alignItems = 'center';
+                    div.style.justifyContent = 'space-between';
+                    div.style.padding = '6px';
+                    div.style.borderRadius = '6px';
+                    div.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;font-weight:700;">${u.username?u.username.charAt(0).toUpperCase():'U'}</div>
+                            <div>
+                                <div style="font-weight:600">${u.name || u.username}</div>
+                                <div style="font-size:12px;color:var(--text-secondary)">@${u.username}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary btn-invite" data-uid="${fid}" data-group="${groupId}">초대</button>
+                        </div>
+                    `;
+                    groupInviteList.appendChild(div);
+                }
+
+                // bind invite buttons
+                groupInviteList.querySelectorAll('.btn-invite').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const fid = btn.dataset.uid;
+                        const gid = btn.dataset.group;
+                        try {
+                            // add member to group
+                            const uSnap = await get(ref(database, `users/${fid}`));
+                            const u = uSnap.exists() ? uSnap.val() : { username: fid, name: fid };
+                            await set(ref(database, `groups/${gid}/members/${fid}`), { username: u.username, name: u.name });
+                            // add chat entry for invited user
+                            await set(ref(database, `chats/${fid}/group_${gid}`), {
+                                lastMessage: `${currentUser.name || currentUser.username}님이 초대했습니다.`,
+                                lastMessageTime: Date.now(),
+                                unread: true
+                            });
+                            // notify group (system message)
+                            const mRef = push(ref(database, `messages/group_${gid}`));
+                            await set(mRef, {
+                                type: 'system',
+                                text: `${u.name || u.username}님이 그룹에 초대되었습니다.`,
+                                timestamp: Date.now(),
+                                senderId: currentUser.uid
+                            });
+                            // refresh lists
+                            renderGroupInviteCandidates(gid);
+                            openGroupInfo(gid);
+                        } catch (err) {
+                            console.error('초대 실패', err);
+                            groupInfoError.textContent = '초대 실패: ' + err.message;
+                            groupInfoError.classList.add('show');
+                        }
+                    });
+                });
+            } catch (e) {
+                console.error('초대 후보 로드 실패', e);
+                groupInviteList.innerHTML = '<div style="color:var(--text-secondary)">로딩 실패</div>';
+            }
+        }
+
         // 페이지 종료 시 오프라인 처리 및 리스너 정리
         window.addEventListener('beforeunload', () => {
             if (currentUser) {
@@ -2830,6 +3048,9 @@
         });
         groupModal.addEventListener('click', (e) => {
             if (e.target === groupModal) groupModal.classList.remove('active');
+        });
+        groupInfoModal.addEventListener('click', (e) => {
+            if (e.target === groupInfoModal) groupInfoModal.classList.remove('active');
         });
 
         // 페이지 로드 시 로그인 상태 확인
