@@ -1152,12 +1152,12 @@
         </main>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, set, push, onValue, get, update, query, orderByChild, equalTo, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
+    <!-- Firebase SDK 수정 버전 -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+    
+    <script>
         // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDyAtNIrWfsROkqi8op6zynWZfjBwEMeh8",
@@ -1171,9 +1171,9 @@
         };
 
         // Firebase 초기화
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
 
         let currentUser = null;
         let currentChatId = null;
@@ -1183,7 +1183,7 @@
         let chatListListener = null;
 
         // ==================== 인증 상태 관리 ====================
-        onAuthStateChanged(auth, (user) => {
+        auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
                 showMainApp();
@@ -1242,11 +1242,11 @@
             signupBtn.innerHTML = '<span class="spinner"></span> 가입 중...';
             
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
                 
                 // Realtime Database에 사용자 정보 저장
-                await set(ref(database, 'users/' + user.uid), {
+                await database.ref('users/' + user.uid).set({
                     name: name,
                     email: email,
                     status: '안녕하세요!',
@@ -1291,7 +1291,7 @@
             loginBtn.innerHTML = '<span class="spinner"></span> 로그인 중...';
             
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                await firebase.auth().signInWithEmailAndPassword(email, password);
                 // onAuthStateChanged가 자동으로 처리
             } catch (error) {
                 console.error('로그인 에러:', error);
@@ -1331,7 +1331,7 @@
             resetBtn.innerHTML = '<span class="spinner"></span> 전송 중...';
             
             try {
-                await sendPasswordResetEmail(auth, email);
+                await firebase.auth().sendPasswordResetEmail(email);
                 
                 successDiv.textContent = '비밀번호 재설정 이메일을 전송했습니다. 이메일을 확인해주세요.';
                 successDiv.classList.add('show');
@@ -1367,7 +1367,7 @@
             if (confirm('로그아웃 하시겠습니까?')) {
                 try {
                     await updateUserStatus(false);
-                    await signOut(auth);
+                    await firebase.auth().signOut();
                 } catch (error) {
                     console.error('로그아웃 에러:', error);
                     alert('로그아웃 중 오류가 발생했습니다.');
@@ -1379,8 +1379,8 @@
         async function loadUserData() {
             if (!currentUser) return;
             
-            const userRef = ref(database, 'users/' + currentUser.uid);
-            const snapshot = await get(userRef);
+            const userRef = database.ref('users/' + currentUser.uid);
+            const snapshot = await userRef.get();
             
             if (snapshot.exists()) {
                 const userData = snapshot.val();
@@ -1394,7 +1394,7 @@
             if (!currentUser) return;
             
             try {
-                await update(ref(database, 'users/' + currentUser.uid), {
+                await database.ref('users/' + currentUser.uid).update({
                     online: online,
                     lastSeen: Date.now()
                 });
@@ -1430,9 +1430,9 @@
             
             try {
                 // 이메일로 사용자 검색
-                const usersRef = ref(database, 'users');
-                const emailQuery = query(usersRef, orderByChild('email'), equalTo(email));
-                const snapshot = await get(emailQuery);
+                const usersRef = database.ref('users');
+                const emailQuery = usersRef.orderByChild('email').equalTo(email);
+                const snapshot = await emailQuery.get();
                 
                 if (!snapshot.exists()) {
                     errorDiv.textContent = '해당 이메일의 사용자를 찾을 수 없습니다.';
@@ -1446,8 +1446,8 @@
                 });
                 
                 // 이미 친구인지 확인
-                const friendCheckRef = ref(database, `friends/${currentUser.uid}/${friendId}`);
-                const friendCheck = await get(friendCheckRef);
+                const friendCheckRef = database.ref(`friends/${currentUser.uid}/${friendId}`);
+                const friendCheck = await friendCheckRef.get();
                 
                 if (friendCheck.exists()) {
                     errorDiv.textContent = '이미 친구로 추가된 사용자입니다.';
@@ -1456,11 +1456,11 @@
                 }
                 
                 // 양방향 친구 관계 추가
-                await set(ref(database, `friends/${currentUser.uid}/${friendId}`), {
+                await database.ref(`friends/${currentUser.uid}/${friendId}`).set({
                     addedAt: Date.now()
                 });
                 
-                await set(ref(database, `friends/${friendId}/${currentUser.uid}`), {
+                await database.ref(`friends/${friendId}/${currentUser.uid}`).set({
                     addedAt: Date.now()
                 });
                 
@@ -1491,8 +1491,8 @@
         function loadFriends() {
             if (!currentUser) return;
             
-            const friendsRef = ref(database, `friends/${currentUser.uid}`);
-            onValue(friendsRef, async (snapshot) => {
+            const friendsRef = database.ref(`friends/${currentUser.uid}`);
+            friendsRef.on('value', async (snapshot) => {
                 const friendsList = document.getElementById('friendsList');
                 friendsList.innerHTML = '';
                 
@@ -1510,7 +1510,7 @@
                 const friendIds = Object.keys(snapshot.val());
                 
                 for (const friendId of friendIds) {
-                    const userSnapshot = await get(ref(database, `users/${friendId}`));
+                    const userSnapshot = await database.ref(`users/${friendId}`).get();
                     if (userSnapshot.exists()) {
                         const friendData = userSnapshot.val();
                         const initial = friendData.name ? friendData.name.charAt(0) : '?';
@@ -1665,21 +1665,21 @@
             if (text === '') return;
             
             try {
-                const messagesRef = ref(database, `messages/${currentChatId}`);
-                await push(messagesRef, {
+                const messagesRef = database.ref(`messages/${currentChatId}`);
+                await messagesRef.push({
                     text: text,
                     senderId: currentUser.uid,
                     timestamp: Date.now()
                 });
                 
                 // 최근 메시지 업데이트
-                await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), {
+                await database.ref(`chats/${currentUser.uid}/${currentChatUser.id}`).update({
                     lastMessage: text,
                     lastMessageTime: Date.now(),
                     unread: false
                 });
                 
-                await update(ref(database, `chats/${currentChatUser.id}/${currentUser.uid}`), {
+                await database.ref(`chats/${currentChatUser.id}/${currentUser.uid}`).update({
                     lastMessage: text,
                     lastMessageTime: Date.now(),
                     unread: true
@@ -1699,7 +1699,7 @@
             
             // 기존 리스너 제거 (중복 방지)
             if (messagesListener) {
-                off(ref(database, `messages/${currentChatId}`));
+                messagesListener.off();
             }
             
             const messagesContainer = document.getElementById('messagesContainer');
@@ -1710,8 +1710,8 @@
             const previousScrollTop = messagesContainer.scrollTop;
             const previousMessageCount = messagesContainer.querySelectorAll('.message').length;
             
-            const messagesRef = ref(database, `messages/${currentChatId}`);
-            messagesListener = onValue(messagesRef, async (snapshot) => {
+            const messagesRef = database.ref(`messages/${currentChatId}`);
+            messagesListener = messagesRef.on('value', async (snapshot) => {
                 // 현재 스크롤 위치 저장
                 const currentScrollTop = messagesContainer.scrollTop;
                 const currentScrollHeight = messagesContainer.scrollHeight;
@@ -1778,7 +1778,7 @@
                     
                     let initial;
                     if (isSent) {
-                        const userSnapshot = await get(ref(database, `users/${currentUser.uid}`));
+                        const userSnapshot = await database.ref(`users/${currentUser.uid}`).get();
                         const userData = userSnapshot.val();
                         initial = userData?.name?.charAt(0) || '나';
                     } else {
@@ -1840,7 +1840,7 @@
             if (!currentChatId || !currentUser) return 0;
             
             try {
-                const snapshot = await get(ref(database, `lastRead/${currentUser.uid}/${currentChatId}`));
+                const snapshot = await database.ref(`lastRead/${currentUser.uid}/${currentChatId}`).get();
                 return snapshot.exists() ? snapshot.val().timestamp : 0;
             } catch (error) {
                 console.error('마지막 읽은 시간 가져오기 에러:', error);
@@ -1853,7 +1853,7 @@
             if (!currentChatId || !currentUser) return;
             
             try {
-                await set(ref(database, `lastRead/${currentUser.uid}/${currentChatId}`), {
+                await database.ref(`lastRead/${currentUser.uid}/${currentChatId}`).set({
                     timestamp: timestamp
                 });
             } catch (error) {
@@ -1867,11 +1867,11 @@
             
             // 기존 리스너 제거 (중복 방지)
             if (chatListListener) {
-                off(ref(database, `chats/${currentUser.uid}`));
+                chatListListener.off();
             }
             
-            const chatsRef = ref(database, `chats/${currentUser.uid}`);
-            chatListListener = onValue(chatsRef, async (snapshot) => {
+            const chatsRef = database.ref(`chats/${currentUser.uid}`);
+            chatListListener = chatsRef.on('value', async (snapshot) => {
                 const chatList = document.getElementById('chatList');
                 if (!chatList) return;
                 
@@ -1890,7 +1890,7 @@
                 
                 const chats = [];
                 for (const [friendId, chatData] of Object.entries(snapshot.val())) {
-                    const userSnapshot = await get(ref(database, `users/${friendId}`));
+                    const userSnapshot = await database.ref(`users/${friendId}`).get();
                     if (userSnapshot.exists()) {
                         chats.push({
                             friendId,
@@ -1935,7 +1935,7 @@
                         
                         // 읽음 처리
                         if (chat.chatData.unread) {
-                            update(ref(database, `chats/${currentUser.uid}/${chat.friendId}`), {
+                            database.ref(`chats/${currentUser.uid}/${chat.friendId}`).update({
                                 unread: false
                             });
                         }
