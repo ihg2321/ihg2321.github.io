@@ -917,7 +917,7 @@
         }
 
         /* emoji panel */
-        /* show 5 emojis per page (1 row of 5) */
+        /* show 5 columns x 5 rows = 25 emojis per page */
         .emoji-panel {
             position: absolute;
             bottom: 96px;
@@ -932,7 +932,7 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.4);
             z-index: 999;
             display: none;
-            width: 240px;
+            width: 280px;
         }
         .emoji-item { font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; height:36px; }
 
@@ -1040,9 +1040,18 @@
             margin-bottom: 12px;
         }
 
-        /* 그룹 생성 체크박스 리스트 */
-        .member-list { max-height:200px; overflow:auto; border:1px solid var(--border); padding:8px; border-radius:8px; background:var(--bg-main); }
-        .member-item { display:flex; align-items:center; gap:8px; padding:6px; border-radius:6px; }
+        /* 그룹 생성 체크박스 리스트 (개선된 UI) */
+        .member-list { max-height:200px; overflow:auto; border:1px solid var(--border); padding:8px; border-radius:8px; background:var(--bg-main); display:grid; grid-template-columns:repeat(1,1fr); gap:8px; }
+        .member-item { display:flex; align-items:center; gap:8px; padding:6px; border-radius:6px; background:transparent; }
+        .member-item .avatar { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;font-weight:700;margin-right:8px; }
+
+        /* responsive grid for members (two columns on wider) */
+        @media (min-width:600px) {
+            .member-list { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .selected-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+        .chip { background:var(--bg-main); border:1px solid var(--border); padding:6px 8px; border-radius:999px; font-size:13px; display:flex; align-items:center; gap:8px; }
 
         /* 그룹 정보 modal specifics */
         .group-members { max-height:240px; overflow:auto; border:1px solid var(--border); padding:8px; border-radius:8px; background:var(--bg-main); }
@@ -1050,6 +1059,9 @@
         .group-member .info { display:flex; gap:8px; align-items:center; }
         .group-member .avatar { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;font-weight:700; }
         .group-invite-list { max-height:160px; overflow:auto; border:1px dashed var(--border); padding:8px; border-radius:8px; background:var(--bg-main); margin-top:8px; }
+
+        .group-modal-header { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; }
+        .muted { color:var(--text-secondary); font-size:13px; }
     </style>
 </head>
 <body>
@@ -1279,7 +1291,10 @@
     <!-- 그룹 생성 모달 -->
     <div class="modal-backdrop" id="groupModal">
         <div class="modal">
-            <h3>그룹 만들기</h3>
+            <div class="group-modal-header">
+                <h3>그룹 만들기</h3>
+                <div class="muted">친구를 선택하여 그룹을 만드세요</div>
+            </div>
             <div class="error-message" id="groupError"></div>
             <div class="form-group">
                 <label>그룹 이름</label>
@@ -1287,10 +1302,12 @@
             </div>
             <div class="form-group">
                 <label>멤버 선택</label>
+                <input type="text" id="groupMemberSearch" placeholder="친구 이름 또는 아이디로 검색" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-main);color:var(--text-primary)"/>
                 <div class="member-list" id="groupMemberList">
                     <!-- 친구 체크박스 목록이 채워집니다 -->
                     <div style="color:var(--text-secondary)">멤버를 선택하세요</div>
                 </div>
+                <div class="selected-chips" id="selectedMembersChips" aria-hidden="true"></div>
             </div>
             <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
                 <button class="btn btn-secondary" id="cancelGroupBtn">취소</button>
@@ -2045,6 +2062,8 @@
                     if (!panel) return;
                     panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
                     document.getElementById('emojiSearch').value = '';
+                    emojiFiltered = EMOJIS.slice();
+                    emojiPage = 0;
                     renderEmojiPage();
                 });
             }
@@ -2100,17 +2119,20 @@
                             const groupId = currentChatId.split('group_')[1];
                             const groupSnap = await get(ref(database, `groups/${groupId}`));
                             const members = groupSnap.exists() ? groupSnap.val().members || {} : {};
+                            const now = Date.now();
                             for (const memberUid of Object.keys(members)) {
-                                await update(ref(database, `chats/${memberUid}/${currentChatId}`), {
+                                const updateObj = {
                                     lastMessage: '[이미지]',
-                                    lastMessageTime: Date.now(),
                                     unread: memberUid === currentUser.uid ? false : true
-                                });
+                                };
+                                // only set lastMessageTime for others (so sender's chat doesn't jump to top)
+                                if (memberUid !== currentUser.uid) updateObj.lastMessageTime = now;
+                                await update(ref(database, `chats/${memberUid}/${currentChatId}`), updateObj);
                             }
                         } else {
+                            // recipient gets time update, sender only gets lastMessage text (no time change)
                             await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), {
                                 lastMessage: '[이미지]',
-                                lastMessageTime: Date.now(),
                                 unread: false
                             });
 
@@ -2131,8 +2153,8 @@
             }
         }
 
-        // ==================== 이모지 시스템(페이징 5개씩) ====================
-        // EMOJIS: 널리 쓰이는 이모지들을 모아둠. 페이지당 5개씩 표시 (사용자가 '다음'/'이전'으로 전체 탐색)
+        // ==================== 이모지 시스템(페이징 5x5 = 25개씩) ====================
+        // EMOJIS: 널리 쓰이는 이모지들을 모아둠. 페이지당 25개(5x5)씩 표시
         const EMOJIS = [
             "😀","😁","😂","🤣","😃","😄","😅","😆","😉","😊","🙂","🙃","😋","😎","😍","😘","😗","😙","😚","😇",
             "🤩","🤗","🤔","🤨","😐","😑","😶","😏","😣","😥","😮","🤐","😯","😪","😫","😴","😌","😛","😜","😝",
@@ -2154,9 +2176,9 @@
             "🍣","🍱","🍛","🍤","🍙","🍚","🍘","🍥","🥠","🍢","🍡","🍧","🍨","🍦","🍰","🎂","🍮","🍩","🍪","🌰"
         ];
 
-        // Pagination state: now show 5 emojis per page as requested
+        // Pagination state: show 25 emojis per page (5x5)
         let emojiPage = 0;
-        const EMOJIS_PER_PAGE = 5;
+        const EMOJIS_PER_PAGE = 25;
         let emojiFiltered = EMOJIS.slice();
 
         function renderEmojiPage() {
@@ -2205,6 +2227,7 @@
                 emojiFiltered = EMOJIS.slice();
             } else {
                 emojiFiltered = EMOJIS.filter(em => {
+                    // simple heuristic: allow searching by the emoji itself (rare) or fallback keywords mapping
                     return em.includes(q) || em === q;
                 });
                 if (emojiFiltered.length === 0) {
@@ -2271,17 +2294,21 @@
                     const groupId = currentChatId.split('group_')[1];
                     const groupSnap = await get(ref(database, `groups/${groupId}`));
                     const members = groupSnap.exists() ? groupSnap.val().members || {} : {};
+                    const now = Date.now();
                     for (const memberUid of Object.keys(members)) {
-                        await update(ref(database, `chats/${memberUid}/${currentChatId}`), {
+                        const updateObj = {
                             lastMessage: text,
-                            lastMessageTime: Date.now(),
                             unread: memberUid === currentUser.uid ? false : true
-                        });
+                        };
+                        // only set lastMessageTime for others to avoid moving sender's chat to top
+                        if (memberUid !== currentUser.uid) updateObj.lastMessageTime = now;
+                        await update(ref(database, `chats/${memberUid}/${currentChatId}`), updateObj);
                     }
                 } else {
+                    // For 1:1 chats, update recipient's lastMessageTime (so their list shows recent),
+                    // but do NOT update sender's lastMessageTime to avoid moving chat to top on send.
                     await update(ref(database, `chats/${currentUser.uid}/${currentChatUser.id}`), {
                         lastMessage: text,
-                        lastMessageTime: Date.now(),
                         unread: false
                     });
 
@@ -2455,6 +2482,11 @@
                 const chatList = document.getElementById('chatList');
                 if (!chatList) return;
                 
+                // Save currently opened chat (to keep it visible)
+                const currentlyOpenPeer = currentChatUser ? (currentChatUser.isGroup ? currentChatUser.id : currentChatUser.id) : null;
+
+                // preserve scroll position minimally
+                const prevScroll = chatList.scrollTop;
                 chatList.innerHTML = '';
                 
                 if (!snapshot.exists()) {
@@ -2469,7 +2501,13 @@
                 }
                 
                 const chats = [];
-                for (const [peerKey, chatData] of Object.entries(snapshot.val())) {
+                const raw = snapshot.val();
+                const seen = new Set(); // dedupe safety
+
+                for (const [peerKey, chatData] of Object.entries(raw)) {
+                    if (seen.has(peerKey)) continue;
+                    seen.add(peerKey);
+
                     if (peerKey.startsWith('group_')) {
                         // fetch group
                         const groupId = peerKey.split('group_')[1];
@@ -2509,6 +2547,8 @@
                     
                     const chatItem = document.createElement('div');
                     chatItem.className = 'chat-item';
+                    // attach peer id for reference and potential scrolling
+                    chatItem.dataset.peer = chat.friendId;
                     chatItem.innerHTML = `
                         <div class="chat-avatar">${initial}</div>
                         <div class="chat-info">
@@ -2531,6 +2571,11 @@
                             });
                         }
                     });
+
+                    // visually mark active
+                    if (currentlyOpenPeer && currentlyOpenPeer === chat.friendId) {
+                        chatItem.classList.add('active');
+                    }
                     
                     chatList.appendChild(chatItem);
                 }
@@ -2542,6 +2587,20 @@
                     badge.style.display = 'flex';
                 } else {
                     badge.style.display = 'none';
+                }
+
+                // After render, ensure current chat is visible (don't force-scroll everyone to top)
+                if (currentlyOpenPeer) {
+                    const el = chatList.querySelector(`[data-peer="${currentlyOpenPeer}"]`);
+                    if (el) {
+                        // scroll that element into view (center) so it doesn't disappear
+                        el.scrollIntoView({ block: 'center', behavior: 'auto' });
+                    } else {
+                        // fallback: restore previous scroll
+                        chatList.scrollTop = prevScroll;
+                    }
+                } else {
+                    chatList.scrollTop = prevScroll;
                 }
             });
         }
@@ -2631,9 +2690,10 @@
                 alert('로그인 상태가 필요합니다.');
                 return;
             }
-            renderGroupMemberList();
             document.getElementById('groupName').value = '';
             document.getElementById('groupError').classList.remove('show');
+            renderGroupMemberList();
+            document.getElementById('selectedMembersChips').innerHTML = '';
             groupModal.classList.add('active');
         });
 
@@ -2641,10 +2701,15 @@
             groupModal.classList.remove('active');
         });
 
-        async function renderGroupMemberList() {
+        // search input for members
+        document.getElementById('groupMemberSearch').addEventListener('input', () => {
+            renderGroupMemberList(document.getElementById('groupMemberSearch').value.trim());
+        });
+
+        async function renderGroupMemberList(filter = '') {
             const listEl = document.getElementById('groupMemberList');
+            const chipsEl = document.getElementById('selectedMembersChips');
             if (!listEl) return;
-            // load friends of current user
             listEl.innerHTML = '<div style="color:var(--text-secondary)">불러오는 중...</div>';
             try {
                 const friendsSnap = await get(ref(database, `friends/${currentUser.uid}`));
@@ -2658,22 +2723,68 @@
                     return;
                 }
                 listEl.innerHTML = '';
-                for (const fid of members) {
-                    const uSnap = await get(ref(database, `users/${fid}`));
-                    if (!uSnap.exists()) continue;
-                    const u = uSnap.val();
+                // fetch all friend profiles in parallel
+                const profiles = await Promise.all(members.map(fid => get(ref(database, `users/${fid}`)).then(s => ({ fid, snap: s }))));
+                for (const { fid, snap } of profiles) {
+                    if (!snap.exists()) continue;
+                    const u = snap.val();
+                    const display = `${u.name || u.username || fid} (@${u.username || ''})`.toLowerCase();
+                    if (filter && !display.includes(filter.toLowerCase())) continue;
                     const div = document.createElement('div');
                     div.className = 'member-item';
                     div.innerHTML = `
-                        <input type="checkbox" data-uid="${fid}" id="chk_${fid}" />
-                        <label for="chk_${fid}" style="cursor:pointer">${u.name || u.username || fid} (@${u.username || ''})</label>
+                        <div class="avatar">${u.username?u.username.charAt(0).toUpperCase():'U'}</div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700">${u.name || u.username}</div>
+                            <div style="font-size:12px;color:var(--text-secondary)">@${u.username || fid}</div>
+                        </div>
+                        <div>
+                            <input type="checkbox" data-uid="${fid}" id="chk_${fid}" />
+                        </div>
                     `;
                     listEl.appendChild(div);
                 }
+
+                // bind change events to checkboxes to update chips
+                listEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.addEventListener('change', updateSelectedChips);
+                });
+
+                // initialize chips based on any checked (none initially)
+                updateSelectedChips();
             } catch (e) {
                 console.error('그룹 멤버 목록 로드 오류', e);
                 listEl.innerHTML = '<div style="color:var(--text-secondary)">목록 로드 실패</div>';
             }
+        }
+
+        function updateSelectedChips() {
+            const listEl = document.getElementById('groupMemberList');
+            const chipsEl = document.getElementById('selectedMembersChips');
+            if (!listEl || !chipsEl) return;
+            const checked = Array.from(listEl.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.dataset.uid);
+            chipsEl.innerHTML = '';
+            if (!checked.length) {
+                chipsEl.setAttribute('aria-hidden','true');
+                return;
+            }
+            chipsEl.removeAttribute('aria-hidden');
+            checked.forEach(uid => {
+                (async () => {
+                    const uSnap = await get(ref(database, `users/${uid}`));
+                    const u = uSnap.exists() ? uSnap.val() : { username: uid, name: uid };
+                    const chip = document.createElement('div');
+                    chip.className = 'chip';
+                    chip.innerHTML = `<span style="font-weight:700">${u.name || u.username}</span> <button class="btn btn-secondary" data-uid="${uid}" style="padding:4px 6px;font-size:12px;">제거</button>`;
+                    chip.querySelector('button')?.addEventListener('click', () => {
+                        // uncheck the corresponding checkbox
+                        const cb = document.getElementById(`chk_${uid}`);
+                        if (cb) cb.checked = false;
+                        chip.remove();
+                    });
+                    chipsEl.appendChild(chip);
+                })();
+            });
         }
 
         confirmCreateGroup.addEventListener('click', async () => {
@@ -2710,7 +2821,8 @@
                     name: groupName,
                     members: membersObj,
                     createdAt: Date.now(),
-                    creator: currentUser.uid
+                    creator: currentUser.uid,
+                    updatedAt: Date.now()
                 });
 
                 // create chats entries for each member
@@ -2791,6 +2903,8 @@
                         try {
                             // remove member from group
                             await set(ref(database, `groups/${groupId}/members/${targetUid}`), null);
+                            // ensure group metadata updated so listeners refresh reliably
+                            await update(ref(database, `groups/${groupId}`), { updatedAt: Date.now() });
                             // remove chat entry for that member
                             await set(ref(database, `chats/${targetUid}/group_${groupId}`), null);
                             // push system message
@@ -2805,7 +2919,8 @@
                             openGroupInfo(groupId);
                             if (currentChatId === `group_${groupId}`) {
                                 // reload current group data
-                                const g2 = (await get(ref(database, `groups/${groupId}`))).val();
+                                const g2Snap = await get(ref(database, `groups/${groupId}`));
+                                const g2 = g2Snap.exists() ? g2Snap.val() : {};
                                 currentChatUser.data = g2;
                                 // update chat header member count
                                 const headerStatus = document.querySelector('.chat-header-status');
@@ -2882,6 +2997,7 @@
                             const uSnap = await get(ref(database, `users/${fid}`));
                             const u = uSnap.exists() ? uSnap.val() : { username: fid, name: fid };
                             await set(ref(database, `groups/${gid}/members/${fid}`), { username: u.username, name: u.name });
+                            await update(ref(database, `groups/${gid}`), { updatedAt: Date.now() });
                             // add chat entry for invited user
                             await set(ref(database, `chats/${fid}/group_${gid}`), {
                                 lastMessage: `${currentUser.name || currentUser.username}님이 초대했습니다.`,
